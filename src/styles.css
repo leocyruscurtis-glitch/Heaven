@@ -1,0 +1,106 @@
+@import "tailwindcss" source(none);
+@source "../src";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  --font-sans: "Plus Jakarta Sans", "Outfit", ui-sans-serif, system-ui, sans-serif;
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 20px;
+  --radius-2xl: 24px;
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-success: var(--success);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-canvas: var(--canvas);
+  --color-forest: var(--forest);
+  --color-turquoise: var(--turquoise);
+  --color-boundary: var(--boundary);
+  --color-park: var(--park);
+  --color-water: var(--water);
+  --shadow-soft: 0 8px 24px rgba(11, 79, 55, 0.06);
+  --shadow-pin: 0 4px 12px rgba(11, 79, 55, 0.18);
+}
+
+:root {
+  /* Civic mint canvas */
+  --canvas: oklch(0.985 0.018 160);            /* #F4FBF7 */
+  --background: oklch(0.985 0.018 160);
+  --foreground: oklch(0.32 0.07 160);           /* deep forest */
+  --forest: oklch(0.32 0.07 160);               /* #0B4F37 */
+  --turquoise: oklch(0.78 0.14 190);            /* #00D2C4 */
+  --success: oklch(0.72 0.16 160);              /* #10B981 */
+  --boundary: oklch(0.65 0.22 25);              /* #EF4444 */
+  --park: oklch(0.95 0.06 160);                 /* #D1FAE5 */
+  --water: oklch(0.96 0.03 235);                /* #E0F2FE */
+
+  --card: oklch(1 0 0);
+  --card-foreground: var(--forest);
+  --popover: oklch(1 0 0);
+  --popover-foreground: var(--forest);
+  --primary: var(--turquoise);
+  --primary-foreground: oklch(1 0 0);
+  --secondary: oklch(0.96 0.02 160);
+  --secondary-foreground: var(--forest);
+  --muted: oklch(0.96 0.015 160);
+  --muted-foreground: oklch(0.45 0.03 160);
+  --accent: oklch(0.95 0.04 190);
+  --accent-foreground: var(--forest);
+  --destructive: var(--boundary);
+  --destructive-foreground: oklch(1 0 0);
+  --border: oklch(0.92 0.02 160);
+  --input: oklch(0.92 0.02 160);
+  --ring: var(--turquoise);
+  --radius: 12px;
+}
+
+.dark {
+  --background: oklch(0.18 0.03 160);
+  --foreground: oklch(0.96 0.02 160);
+}
+
+@layer base {
+  * { border-color: var(--color-border); }
+  html, body { font-family: var(--font-sans); }
+  body {
+    background-color: var(--color-background);
+    color: var(--color-foreground);
+    -webkit-font-smoothing: antialiased;
+  }
+  h1, h2, h3, h4 { color: var(--forest); font-weight: 700; letter-spacing: -0.01em; }
+}
+
+@layer components {
+  .micro-label {
+    font-size: 10px;
+    color: var(--forest);
+    opacity: 0.4;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-weight: 500;
+  }
+  .card-soft {
+    background: #fff;
+    border-radius: 20px;
+    box-shadow: var(--shadow-soft);
+  }
+}

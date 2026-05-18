@@ -1,0 +1,1 @@
+import{j as o,L as t}from"./index-D1eRDeM0.js";import{M as e}from"./MobileShell-BdUfdx0F.js";const i=()=>o.jsx(e,{children:o.jsxs("div",{className:"p-8 text-center",children:["Event not found. ",o.jsx(t,{to:"/",className:"text-turquoise",children:"Back to map"})]})});export{i as notFoundComponent};
