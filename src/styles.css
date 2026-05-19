@@ -104,3 +104,39 @@
     box-shadow: var(--shadow-soft);
   }
 }
+
+/* === Accessibility preferences (applied from src/lib/app-store.tsx) === */
+
+/* Reduced motion: disable animations & transitions app-wide */
+html[data-reduced-motion="true"] *,
+html[data-reduced-motion="true"] *::before,
+html[data-reduced-motion="true"] *::after {
+  animation-duration: 0.001ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.001ms !important;
+  scroll-behavior: auto !important;
+}
+
+/* High contrast: darker text, stronger borders, heavier shadows */
+html[data-high-contrast="true"] {
+  --forest: oklch(0.22 0.08 160);
+  --foreground: oklch(0.18 0.05 160);
+  --border: oklch(0.55 0.04 160);
+  --muted-foreground: oklch(0.28 0.04 160);
+  --shadow-soft: 0 4px 14px rgba(0, 0, 0, 0.22);
+}
+html[data-high-contrast="true"] .card-soft {
+  border: 1.5px solid var(--border);
+}
+html[data-high-contrast="true"] button,
+html[data-high-contrast="true"] a {
+  text-underline-offset: 2px;
+}
+
+/* Colorblind: surface text labels next to colour-only signals */
+html[data-colorblind="true"] [data-status-label]::after {
+  content: " (" attr(data-status-label) ")";
+  font-weight: 600;
+  margin-left: 2px;
+}
+
