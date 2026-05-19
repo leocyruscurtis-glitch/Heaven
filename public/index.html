@@ -3,688 +3,311 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Civic Routes</title>
+    <title>Haven</title>
     <script src="/env.js"></script>
-    <link
-      rel="stylesheet"
-      href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
-    />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <style>
       :root {
         color-scheme: light;
-        --ink: #10251e;
-        --muted: #60756c;
-        --soft: #eef7f2;
-        --panel: #ffffff;
+        --mint: #f2fbf7;
+        --mint-2: #e9f7ef;
+        --card: #ffffff;
+        --ink: #0b4228;
+        --text: #333333;
+        --muted: #66766d;
         --line: #d8e5dd;
-        --brand: #076b4f;
-        --brand-dark: #064c39;
-        --accent: #ff7a45;
-        --accent-soft: #fff0e8;
-        --blue: #246b8f;
-        --blue-soft: #e6f4fa;
+        --accent: #00d2c4;
+        --accent-dark: #08796f;
         --danger: #9d2f2f;
-        --disabled: #7b8580;
-        --shadow: 0 24px 70px rgba(14, 45, 34, 0.16);
-        font-family:
-          Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
-          "Segoe UI", sans-serif;
+        --warning: #8a4b05;
+        --shadow: 0 8px 24px rgba(11, 79, 55, 0.06);
+        --font-scale: 1;
+        font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
       }
 
-      * {
-        box-sizing: border-box;
-      }
-
+      * { box-sizing: border-box; }
+      html { background: var(--mint); }
       body {
         margin: 0;
         min-height: 100vh;
-        color: var(--ink);
-        background:
-          linear-gradient(180deg, rgba(7, 107, 79, 0.12), transparent 42%),
-          #f7fbf8;
+        color: var(--text);
+        background: radial-gradient(circle at top, rgba(0, 210, 196, 0.12), transparent 38%), var(--mint);
+        font-size: calc(16px * var(--font-scale));
+      }
+      button, input, select, textarea { font: inherit; }
+      button { cursor: pointer; }
+      button:disabled { cursor: not-allowed; opacity: 0.52; }
+      a { color: var(--accent-dark); }
+
+      body.high-contrast {
+        --mint: #ffffff;
+        --mint-2: #e2f4ed;
+        --line: #789285;
+        --muted: #27362f;
+        --shadow: 0 8px 24px rgba(0, 0, 0, 0.14);
+      }
+      body.reduced-motion *, body.reduced-motion *::before, body.reduced-motion *::after {
+        transition: none !important;
+        animation: none !important;
       }
 
-      button,
-      input,
-      select,
-      textarea {
-        font: inherit;
-      }
-
-      button {
-        cursor: pointer;
-      }
-
-      button:disabled {
-        cursor: not-allowed;
-        opacity: 0.58;
-      }
-
-      a {
-        color: var(--brand);
-      }
-
-      .app-shell {
+      .app-root {
         min-height: 100vh;
-        padding: 22px;
+        display: flex;
+        justify-content: center;
+        padding: 18px;
       }
-
-      .frame {
-        width: min(1180px, 100%);
-        min-height: calc(100vh - 44px);
-        margin: 0 auto;
+      .phone {
+        position: relative;
+        width: min(100%, 460px);
+        min-height: calc(100vh - 36px);
         overflow: hidden;
         border: 1px solid var(--line);
-        border-radius: 28px;
-        background: rgba(255, 255, 255, 0.94);
-        box-shadow: var(--shadow);
+        border-radius: 30px;
+        background: var(--mint);
+        box-shadow: 0 18px 70px rgba(10, 79, 59, 0.14);
       }
+      .phone.no-frame {
+        width: min(100%, 900px);
+      }
+      .screen {
+        min-height: calc(100vh - 36px);
+        padding: 24px 18px 104px;
+      }
+      .screen.auth-screen, .screen.setup-screen { padding-bottom: 24px; }
 
-      .topbar {
+      .brand-row, .top-row, .split {
         display: flex;
         align-items: center;
         justify-content: space-between;
-        gap: 16px;
-        padding: 18px 22px;
-        border-bottom: 1px solid var(--line);
-        background: rgba(255, 255, 255, 0.88);
-        backdrop-filter: blur(16px);
-      }
-
-      .brand-lockup {
-        display: flex;
-        align-items: center;
         gap: 12px;
       }
-
+      .brand-row { margin-bottom: 24px; }
       .brand-mark {
+        width: 44px;
+        height: 44px;
         display: grid;
-        width: 42px;
-        height: 42px;
         place-items: center;
+        border-radius: 16px;
+        background: var(--accent);
+        color: #ffffff;
+        font-weight: 900;
+        letter-spacing: -0.03em;
+      }
+      .brand-name { margin: 0; color: var(--ink); font-size: 1.45rem; line-height: 1; }
+      .eyebrow {
+        margin: 0 0 6px;
+        color: var(--muted);
+        font-size: 0.76rem;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+      }
+      h1, h2, h3, p { margin-top: 0; }
+      h1 { color: var(--ink); font-size: 2.3rem; line-height: 0.98; letter-spacing: -0.055em; margin-bottom: 12px; }
+      h2 { color: var(--ink); font-size: 1.7rem; line-height: 1.1; margin-bottom: 10px; letter-spacing: -0.035em; }
+      h3 { color: var(--ink); font-size: 1.08rem; margin-bottom: 8px; }
+      .muted { color: var(--muted); }
+      .small { font-size: 0.88rem; }
+
+      .stack { display: grid; gap: 14px; }
+      .grid { display: grid; gap: 12px; }
+      .grid.two { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .grid.three { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+      .card, .panel {
+        background: var(--card);
+        border: 1px solid var(--line);
+        border-radius: 20px;
+        padding: 16px;
+        box-shadow: var(--shadow);
+      }
+      .panel.flat { box-shadow: none; }
+      .hero-card {
+        min-height: calc(100vh - 84px);
+        display: grid;
+        align-content: center;
+        gap: 22px;
+      }
+
+      .field { display: grid; gap: 7px; }
+      .field label, .legend { color: var(--muted); font-size: 0.82rem; font-weight: 800; }
+      input, select, textarea {
+        width: 100%;
+        min-height: 46px;
+        border: 1px solid var(--line);
         border-radius: 14px;
-        color: #fff;
-        background: var(--brand);
+        background: #ffffff;
+        color: var(--text);
+        padding: 11px 13px;
+        outline: none;
+      }
+      textarea { min-height: 104px; resize: vertical; }
+      input:focus, select:focus, textarea:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(0, 210, 196, 0.18); }
+
+      .pill-row, .btn-row { display: flex; flex-wrap: wrap; gap: 9px; align-items: center; }
+      .choice { position: relative; }
+      .choice input { position: absolute; inset: 0; opacity: 0; pointer-events: none; }
+      .choice span, .chip, .badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        min-height: 34px;
+        border: 1px solid var(--line);
+        border-radius: 999px;
+        background: #ffffff;
+        color: var(--ink);
+        padding: 7px 11px;
+        font-size: 0.86rem;
         font-weight: 800;
       }
-
-      .eyebrow {
-        margin: 0;
-        color: var(--muted);
-        font-size: 0.78rem;
-        font-weight: 700;
-        letter-spacing: 0;
-        text-transform: uppercase;
+      .choice input:checked + span, .chip.active {
+        border-color: var(--accent);
+        background: var(--accent);
+        color: #ffffff;
       }
-
-      h1,
-      h2,
-      h3,
-      p {
-        margin-top: 0;
-      }
-
-      h1 {
-        margin-bottom: 10px;
-        font-size: clamp(2.4rem, 5vw, 4.8rem);
-        line-height: 0.95;
-        letter-spacing: 0;
-      }
-
-      h2 {
-        margin-bottom: 10px;
-        font-size: 1.65rem;
-        line-height: 1.12;
-      }
-
-      h3 {
-        margin-bottom: 8px;
-        font-size: 1.05rem;
-      }
-
-      .muted {
-        color: var(--muted);
-      }
-
-      .small {
-        font-size: 0.88rem;
-      }
-
-      .layout {
-        display: grid;
-        grid-template-columns: 280px minmax(0, 1fr);
-        min-height: calc(100vh - 124px);
-      }
-
-      .sidebar {
-        display: flex;
-        flex-direction: column;
-        gap: 14px;
-        padding: 18px;
-        border-right: 1px solid var(--line);
-        background: #f8fcf9;
-      }
-
-      .content {
-        min-width: 0;
-        padding: 22px;
-      }
-
-      .nav-button {
-        display: flex;
-        width: 100%;
-        align-items: center;
-        justify-content: space-between;
-        gap: 10px;
-        padding: 13px 14px;
-        border: 1px solid transparent;
-        border-radius: 14px;
-        color: var(--ink);
-        background: transparent;
-        text-align: left;
-        font-weight: 700;
-      }
-
-      .nav-button.active {
-        border-color: var(--line);
-        background: #fff;
-        box-shadow: 0 8px 20px rgba(22, 65, 50, 0.08);
-      }
-
-      .nav-pill {
-        min-width: 30px;
-        padding: 2px 8px;
-        border-radius: 999px;
-        background: var(--soft);
-        color: var(--brand-dark);
-        font-size: 0.78rem;
-        text-align: center;
-      }
-
-      .hero {
-        display: grid;
-        min-height: calc(100vh - 44px);
-        grid-template-columns: minmax(0, 1.15fr) minmax(340px, 0.85fr);
-      }
-
-      .hero-copy {
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        padding: clamp(32px, 7vw, 82px);
-        background:
-          linear-gradient(180deg, rgba(255, 255, 255, 0.76), rgba(255, 255, 255, 0.98)),
-          url("https://images.unsplash.com/photo-1519751138087-5bf79df62d5b?auto=format&fit=crop&w=1800&q=80")
-            center/cover;
-      }
-
-      .hero-panel,
-      .panel,
-      .card {
-        border: 1px solid var(--line);
-        border-radius: 18px;
-        background: var(--panel);
-      }
-
-      .hero-panel {
-        margin: clamp(22px, 4vw, 46px);
-        padding: 22px;
-        align-self: center;
-        box-shadow: 0 14px 40px rgba(11, 52, 39, 0.13);
-      }
-
-      .panel {
-        padding: 18px;
-      }
-
-      .card {
-        padding: 16px;
-      }
-
-      .stack {
-        display: grid;
-        gap: 14px;
-      }
-
-      .grid {
-        display: grid;
-        gap: 14px;
-      }
-
-      .grid.two {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-      }
-
-      .grid.three {
-        grid-template-columns: repeat(3, minmax(0, 1fr));
-      }
-
-      .section-heading {
-        display: flex;
-        align-items: flex-end;
-        justify-content: space-between;
-        gap: 16px;
-        margin-bottom: 16px;
-      }
-
-      .field {
-        display: grid;
-        gap: 7px;
-      }
-
-      .field label,
-      .legend {
-        color: var(--muted);
-        font-size: 0.84rem;
-        font-weight: 700;
-      }
-
-      input,
-      select,
-      textarea {
-        width: 100%;
-        border: 1px solid var(--line);
-        border-radius: 12px;
-        background: #fff;
-        color: var(--ink);
-        padding: 11px 12px;
-      }
-
-      textarea {
-        min-height: 96px;
-        resize: vertical;
-      }
-
-      .choice-grid {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 9px;
-      }
-
-      .choice {
-        position: relative;
-      }
-
-      .choice input {
-        position: absolute;
-        opacity: 0;
-        pointer-events: none;
-      }
-
-      .choice span {
-        display: block;
-        padding: 9px 12px;
-        border: 1px solid var(--line);
-        border-radius: 999px;
-        background: #fff;
-        color: var(--ink);
-        font-size: 0.9rem;
-        font-weight: 700;
-      }
-
-      .choice input:checked + span {
-        border-color: var(--brand);
-        color: var(--brand-dark);
-        background: var(--soft);
-      }
-
-      .btn-row {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 10px;
-        align-items: center;
-      }
+      .badge.soft { background: var(--mint-2); color: var(--ink); border-color: transparent; }
+      .badge.warning { background: #fff1d8; color: var(--warning); border-color: transparent; }
+      .badge.full { background: #eef0ef; color: #5d6862; border-color: transparent; }
 
       .button {
         display: inline-flex;
         align-items: center;
         justify-content: center;
-        min-height: 42px;
-        padding: 10px 15px;
-        border: 1px solid var(--brand);
-        border-radius: 12px;
-        background: var(--brand);
-        color: #fff;
-        font-weight: 800;
+        gap: 8px;
+        min-height: 46px;
+        padding: 11px 15px;
+        border: 1px solid var(--accent-dark);
+        border-radius: 15px;
+        background: var(--accent-dark);
+        color: #ffffff;
+        font-weight: 900;
         text-decoration: none;
       }
+      .button.primary { background: var(--accent); border-color: var(--accent); color: #063d32; }
+      .button.secondary { background: #ffffff; color: var(--ink); border-color: var(--line); }
+      .button.ghost { background: transparent; color: var(--ink); border-color: transparent; }
+      .button.danger { background: #fff4f4; color: var(--danger); border-color: #e8b7b7; }
+      .full-width { width: 100%; }
 
-      .button.secondary {
-        border-color: var(--line);
-        background: #fff;
-        color: var(--ink);
-      }
-
-      .button.warn {
-        border-color: #d2a58c;
-        background: var(--accent-soft);
-        color: #723519;
-      }
-
-      .status-chip,
-      .badge {
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-        width: fit-content;
-        border-radius: 999px;
-        padding: 5px 9px;
-        font-size: 0.78rem;
-        font-weight: 800;
-      }
-
-      .badge {
-        border: 1px solid var(--line);
-        background: #fff;
-        color: var(--muted);
-      }
-
-      .status-chip.active {
-        background: var(--soft);
-        color: var(--brand-dark);
-      }
-
-      .status-chip.full {
-        background: #edf0ee;
-        color: var(--disabled);
-      }
-
-      .notice,
-      .error-box {
-        border-radius: 14px;
-        padding: 13px 14px;
-      }
-
-      .notice {
-        border: 1px solid #bcded0;
-        background: var(--soft);
-        color: var(--brand-dark);
-      }
-
-      .error-box {
-        border: 1px solid #e8b7b7;
-        background: #fff4f4;
-        color: var(--danger);
-      }
-
-      .event-list {
+      .bottom-nav {
+        position: absolute;
+        right: 0;
+        bottom: 0;
+        left: 0;
+        z-index: 40;
         display: grid;
-        gap: 12px;
+        grid-template-columns: repeat(var(--nav-count), 1fr);
+        gap: 7px;
+        min-height: 78px;
+        padding: 9px 12px 12px;
+        border-top: 1px solid var(--line);
+        border-radius: 22px 22px 0 0;
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(18px);
+        box-shadow: 0 -10px 34px rgba(14, 45, 34, 0.08);
       }
-
-      .event-card {
+      .tab-button {
         display: grid;
-        gap: 12px;
-        transition:
-          border-color 160ms ease,
-          box-shadow 160ms ease;
-      }
-
-      .event-card:hover {
-        border-color: #bbd4c9;
-        box-shadow: 0 10px 30px rgba(18, 58, 44, 0.09);
-      }
-
-      .event-meta {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 8px;
-        color: var(--muted);
-        font-size: 0.9rem;
-      }
-
-      .split {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 12px;
-      }
-
-      .map-shell {
-        display: grid;
-        grid-template-columns: minmax(0, 1fr) 330px;
-        gap: 16px;
-        min-height: 650px;
-      }
-
-      #map {
-        min-height: 650px;
-        border: 1px solid var(--line);
+        place-items: center;
+        gap: 4px;
+        min-height: 56px;
+        border: 0;
         border-radius: 18px;
-        background: #dbe8e0;
-        overflow: hidden;
+        background: transparent;
+        color: var(--muted);
+        font-size: 0.78rem;
+        font-weight: 900;
       }
+      .tab-button .tab-icon { font-size: 1.22rem; line-height: 1; }
+      .tab-button.active { background: var(--mint-2); color: var(--accent-dark); }
 
-      .map-panel {
-        display: flex;
-        flex-direction: column;
-        gap: 12px;
-        min-height: 0;
-      }
-
-      .map-results {
+      .event-list { display: grid; gap: 14px; }
+      .event-card { display: grid; gap: 12px; }
+      .event-title-row { display: flex; align-items: flex-start; gap: 12px; }
+      .event-icon {
+        flex: 0 0 auto;
+        width: 48px;
+        height: 48px;
         display: grid;
-        gap: 10px;
-        overflow: auto;
-        padding-right: 4px;
+        place-items: center;
+        border-radius: 50%;
+        background: var(--mint-2);
+        color: var(--ink);
+        font-weight: 900;
       }
+      .event-card h3 { font-size: 1.28rem; margin: 0 0 4px; }
+      .event-meta { color: var(--muted); display: flex; flex-wrap: wrap; gap: 7px; font-size: 0.92rem; }
+      .capacity { font-weight: 900; color: var(--ink); }
 
-      .event-pin {
-        width: 26px;
-        height: 34px;
-        transform: translate(-13px, -34px);
+      .map-shell { display: grid; gap: 14px; }
+      #map {
+        height: min(58vh, 460px);
+        min-height: 360px;
+        border: 1px solid var(--line);
+        border-radius: 22px;
+        overflow: hidden;
+        background: #dbe8e0;
+        box-shadow: var(--shadow);
       }
-
-      .event-pin span {
-        display: block;
-        width: 26px;
-        height: 26px;
-        border: 3px solid #fff;
-        border-radius: 50% 50% 50% 4px;
-        transform: rotate(-45deg);
-        box-shadow: 0 8px 18px rgba(0, 0, 0, 0.22);
-      }
-
-      .pin-active span {
-        background: var(--accent);
-      }
-
-      .pin-full span {
-        background: #808a84;
-      }
-
-      .leaflet-container {
-        font: inherit;
-      }
+      .leaflet-container { font: inherit; }
+      .event-pin { width: 28px; height: 36px; transform: translate(-14px, -36px); }
+      .event-pin span { display: block; width: 28px; height: 28px; border: 3px solid #fff; border-radius: 50% 50% 50% 5px; transform: rotate(-45deg); box-shadow: 0 8px 18px rgba(0,0,0,.22); }
+      .pin-active span { background: var(--accent); }
+      .pin-full span { background: #7c8781; }
 
       .modal-backdrop {
         position: fixed;
         inset: 0;
         z-index: 1000;
         display: grid;
-        place-items: center;
-        padding: 22px;
-        background: rgba(8, 25, 19, 0.45);
+        place-items: end center;
+        padding: 18px;
+        background: rgba(8, 25, 19, 0.42);
       }
-
       .modal {
-        width: min(760px, 100%);
-        max-height: min(780px, 92vh);
+        width: min(100%, 460px);
+        max-height: 92vh;
         overflow: auto;
-        border-radius: 22px;
-        background: #fff;
-        box-shadow: var(--shadow);
+        border-radius: 26px;
+        background: #ffffff;
+        box-shadow: 0 22px 80px rgba(0, 0, 0, 0.25);
       }
+      .modal-header { position: sticky; top: 0; background: #fff; border-bottom: 1px solid var(--line); padding: 18px; display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
+      .modal-body { padding: 18px; }
 
-      .modal-header {
-        position: sticky;
-        top: 0;
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 14px;
-        padding: 18px;
-        border-bottom: 1px solid var(--line);
-        background: #fff;
-      }
-
-      .modal-body {
-        padding: 18px;
-      }
-
-      .empty {
-        display: grid;
-        min-height: 220px;
-        place-items: center;
-        border: 1px dashed #c6d7cf;
-        border-radius: 18px;
-        color: var(--muted);
-        text-align: center;
-      }
-
-      .toast {
-        position: fixed;
-        right: 22px;
-        bottom: 22px;
-        z-index: 1200;
-        max-width: min(420px, calc(100vw - 44px));
-        transform: translateY(18px);
-        border: 1px solid #bcded0;
-        border-radius: 14px;
-        background: var(--ink);
-        color: #fff;
-        opacity: 0;
+      .notice, .error-box {
+        border-radius: 16px;
         padding: 13px 14px;
-        transition:
-          opacity 160ms ease,
-          transform 160ms ease;
       }
+      .notice { border: 1px solid #bcded0; background: var(--mint-2); color: var(--ink); }
+      .error-box { border: 1px solid #e8b7b7; background: #fff4f4; color: var(--danger); }
+      .empty { min-height: 180px; display: grid; place-items: center; border: 1px dashed var(--line); border-radius: 20px; color: var(--muted); text-align: center; padding: 18px; }
+      .toast { position: fixed; left: 50%; bottom: 22px; z-index: 1400; width: min(420px, calc(100vw - 32px)); transform: translate(-50%, 20px); opacity: 0; border-radius: 16px; background: var(--ink); color: #fff; padding: 14px 16px; box-shadow: var(--shadow); transition: opacity .16s ease, transform .16s ease; }
+      .toast.show { opacity: 1; transform: translate(-50%, 0); }
+      .hidden { display: none !important; }
 
-      .toast.show {
-        transform: translateY(0);
-        opacity: 1;
-      }
-
-      .bottom-nav {
-        display: none;
-      }
-
-      @media (max-width: 900px) {
-        .app-shell {
-          padding: 0;
-        }
-
-        .frame {
-          min-height: 100vh;
-          border: 0;
-          border-radius: 0;
-        }
-
-        .hero {
-          grid-template-columns: 1fr;
-        }
-
-        .hero-copy {
-          min-height: 38vh;
-        }
-
-        .layout {
-          grid-template-columns: 1fr;
-          padding-bottom: 78px;
-        }
-
-        .sidebar {
-          display: none;
-        }
-
-        .bottom-nav {
-          position: fixed;
-          right: 0;
-          bottom: 0;
-          left: 0;
-          z-index: 900;
-          display: grid;
-          grid-template-columns: repeat(var(--nav-count), 1fr);
-          gap: 8px;
-          padding: 10px;
-          border-top: 1px solid var(--line);
-          background: rgba(255, 255, 255, 0.95);
-          backdrop-filter: blur(14px);
-        }
-
-        .bottom-nav .nav-button {
-          justify-content: center;
-          padding: 10px 6px;
-          font-size: 0.88rem;
-        }
-
-        .bottom-nav .nav-pill {
-          display: none;
-        }
-
-        .grid.two,
-        .grid.three,
-        .map-shell {
-          grid-template-columns: 1fr;
-        }
-
-        #map {
-          min-height: 460px;
-        }
+      @media (max-width: 540px) {
+        .app-root { padding: 0; }
+        .phone { min-height: 100vh; border: 0; border-radius: 0; }
+        .screen { min-height: 100vh; }
+        .grid.two, .grid.three { grid-template-columns: 1fr; }
+        h1 { font-size: 2.1rem; }
       }
     </style>
   </head>
   <body>
-    <main id="app" class="app-shell">
-      <section class="frame">
-        <div class="empty">Loading Civic Routes...</div>
-      </section>
-    </main>
+    <main id="app" class="app-root"><section class="phone"><div class="screen"><div class="empty">Loading Haven...</div></div></section></main>
     <div id="toast" class="toast" role="status" aria-live="polite"></div>
 
     <script type="module">
-      const MISSING_ENV_MESSAGE =
-        "Supabase environment variables are missing. Add VITE_SUPABASE_URL and VITE_SUPABASE_PUBLISHABLE_KEY in Vercel.";
-
-      const ACTIVE_EVENT_STATUSES = [
-        "open",
-        "scheduled",
-        "live",
-        "minimum_reached",
-        "almost_full",
-        "full",
-      ];
-
-      const MAIN_STATES = [
-        "Spectator",
-        "Join",
-        "Interested",
-        "Maybe",
-        "Remind me later",
-      ];
-
+      const MISSING_ENV_MESSAGE = "Supabase environment variables are missing. Add VITE_SUPABASE_URL and VITE_SUPABASE_PUBLISHABLE_KEY in Vercel.";
+      const ACTIVE_EVENT_STATUSES = ["open", "scheduled", "live", "minimum_reached", "almost_full", "full"];
+      const MAIN_STATES = ["Join", "Interested", "Maybe", "Remind me later", "Spectator"];
       const AGE_RANGES = ["18–25", "25–35", "35–45", "45–60", "60+"];
-      const GENDERS = ["Male", "Female", "Other", "Prefer not to say"];
-      const INTERESTS = [
-        "Sports",
-        "Board Games",
-        "Literature",
-        "Music",
-        "Dance",
-        "Gaming",
-        "Cooking",
-        "Walking",
-      ];
-      const NOTIFICATIONS = [
-        "nearby",
-        "recommended",
-        "startingSoon",
-        "quiet",
-        "team",
-        "weekend",
-      ];
-
+      const GENDERS = ["None", "Male", "Female"];
+      const INTERESTS = ["Sports", "Board Games", "Literature", "Music", "Dance", "Gaming", "Cooking", "Walking"];
+      const NOTIFICATIONS = ["nearby", "recommended", "startingSoon", "quiet", "team", "weekend"];
       const ZONES = {
         kralingen: { name: "Kralingen", lat: 51.9225, lng: 4.5325 },
         centrum: { name: "Centrum", lat: 51.9225, lng: 4.4792 },
@@ -695,6 +318,7 @@
         crooswijk: { name: "Crooswijk", lat: 51.928, lng: 4.504 },
       };
 
+      const app = document.querySelector("#app");
       const state = {
         supabase: null,
         configError: "",
@@ -713,1709 +337,394 @@
         selectedEventId: "",
         detailDraft: null,
         countDialog: null,
-        filters: {
-          zone: "",
-          radius: "",
-          query: "",
-        },
+        deleteConfirm: false,
+        settingsEditInterests: false,
+        savingRegistration: false,
+        filters: { zone: "", radius: "", query: "" },
       };
-
       let mapInstance = null;
-      let radiusLayer = null;
       let markerLayer = null;
-
-      const app = document.querySelector("#app");
+      let radiusLayer = null;
 
       function escapeHtml(value) {
-        return String(value ?? "")
-          .replaceAll("&", "&amp;")
-          .replaceAll("<", "&lt;")
-          .replaceAll(">", "&gt;")
-          .replaceAll('"', "&quot;")
-          .replaceAll("'", "&#039;");
+        return String(value ?? "").replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll('"', "&quot;").replaceAll("'", "&#039;");
       }
-
       function asArray(value) {
         if (Array.isArray(value)) return value;
         if (!value) return [];
-        if (typeof value === "string") {
-          try {
-            const parsed = JSON.parse(value);
-            return Array.isArray(parsed) ? parsed : [];
-          } catch {
-            return [];
-          }
-        }
+        if (typeof value === "string") { try { const parsed = JSON.parse(value); return Array.isArray(parsed) ? parsed : []; } catch { return []; } }
         return [];
       }
-
       function asObject(value, fallback = {}) {
         if (!value) return { ...fallback };
-        if (typeof value === "object" && !Array.isArray(value)) {
-          return { ...fallback, ...value };
-        }
-        if (typeof value === "string") {
-          try {
-            const parsed = JSON.parse(value);
-            return typeof parsed === "object" && parsed
-              ? { ...fallback, ...parsed }
-              : { ...fallback };
-          } catch {
-            return { ...fallback };
-          }
-        }
+        if (typeof value === "object" && !Array.isArray(value)) return { ...fallback, ...value };
+        if (typeof value === "string") { try { const parsed = JSON.parse(value); return parsed && typeof parsed === "object" ? { ...fallback, ...parsed } : { ...fallback }; } catch { return { ...fallback }; } }
         return { ...fallback };
       }
-
-      function getZoneId() {
-        return (
-          state.filters.zone ||
-          state.resident?.location_zone_id ||
-          state.organiser?.municipality_zone_id ||
-          "kralingen"
-        );
-      }
-
-      function getRadiusKm() {
-        return Number(state.filters.radius || state.resident?.radius_km || 5);
-      }
-
-      function getZone(zoneId = getZoneId()) {
-        return ZONES[zoneId] || ZONES.kralingen;
-      }
-
-      function formatTime(value) {
-        if (!value) return "Time to be confirmed";
-        const date = new Date(value);
-        if (Number.isNaN(date.getTime())) return value;
-        return date.toLocaleString(undefined, {
-          weekday: "short",
-          month: "short",
-          day: "numeric",
-          hour: "2-digit",
-          minute: "2-digit",
-        });
-      }
-
-      function formatStatus(value) {
-        return String(value || "scheduled").replaceAll("_", " ");
-      }
-
-      function toast(message) {
-        const node = document.querySelector("#toast");
-        node.textContent = message;
-        node.classList.add("show");
-        window.setTimeout(() => node.classList.remove("show"), 3400);
-      }
-
-      function setError(message) {
-        state.error = message || "";
-        state.notice = "";
-        render();
-      }
-
-      function setNotice(message) {
-        state.notice = message || "";
-        state.error = "";
-        render();
-      }
-
-      function haversineKm(aLat, aLng, bLat, bLng) {
-        const toRad = (value) => (Number(value) * Math.PI) / 180;
-        const earthKm = 6371;
-        const dLat = toRad(bLat - aLat);
-        const dLng = toRad(bLng - aLng);
-        const lat1 = toRad(aLat);
-        const lat2 = toRad(bLat);
-        const a =
-          Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-          Math.cos(lat1) *
-            Math.cos(lat2) *
-            Math.sin(dLng / 2) *
-            Math.sin(dLng / 2);
-        return 2 * earthKm * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-      }
-
-      function ageValue(ageRange) {
-        const map = {
-          "18–25": 21,
-          "25–35": 30,
-          "35–45": 40,
-          "45–60": 52,
-          "60+": 65,
-        };
-        return map[ageRange] || 30;
-      }
-
-      function isFull(event) {
-        return (
-          event.status === "full" ||
-          Number(event.current_registration || 0) >=
-            Number(event.max_capacity || 0)
-        );
-      }
-
+      function defaultNotificationPrefs() { return { nearby: true, recommended: true, startingSoon: true, quiet: false, team: true, weekend: true }; }
+      function defaultPrivacySettings() { return { pauseRecs: false, hideFromMatching: false, deactivated: false }; }
+      function defaultAccessibilityPrefs() { return { fontScale: 1, reducedMotion: false, highContrast: false, colorblind: false }; }
+      function getZoneId() { return state.filters.zone || state.resident?.location_zone_id || state.organiser?.municipality_zone_id || "kralingen"; }
+      function getRadiusKm() { return Number(state.filters.radius || state.resident?.radius_km || 5); }
+      function getZone(zoneId = getZoneId()) { return ZONES[zoneId] || ZONES.kralingen; }
+      function formatTime(value) { if (!value) return "Time to be confirmed"; const date = new Date(value); if (Number.isNaN(date.getTime())) return value; return date.toLocaleString(undefined, { weekday: "short", month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" }); }
+      function dateTimeLocal(minutesAhead) { const date = new Date(Date.now() + minutesAhead * 60 * 1000); date.setMinutes(date.getMinutes() - date.getTimezoneOffset()); return date.toISOString().slice(0, 16); }
+      function toast(message) { const node = document.querySelector("#toast"); node.textContent = message; node.classList.add("show"); window.setTimeout(() => node.classList.remove("show"), 3400); }
+      function setError(message) { state.error = message || ""; state.notice = ""; render(); }
+      function setNotice(message) { state.notice = message || ""; state.error = ""; render(); }
+      function haversineKm(aLat, aLng, bLat, bLng) { const toRad = (v) => Number(v) * Math.PI / 180; const earthKm = 6371; const dLat = toRad(bLat - aLat); const dLng = toRad(bLng - aLng); const lat1 = toRad(aLat); const lat2 = toRad(bLat); const a = Math.sin(dLat / 2) ** 2 + Math.cos(lat1) * Math.cos(lat2) * Math.sin(dLng / 2) ** 2; return 2 * earthKm * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a)); }
+      function eventDistance(event) { const center = getZone(); return haversineKm(center.lat, center.lng, Number(event.lat), Number(event.lng)); }
+      function isFull(event) { return event.status === "full" || Number(event.current_registration || 0) >= Number(event.max_capacity || 0); }
+      function spotsLeft(event) { return Math.max(0, Number(event.max_capacity || 0) - Number(event.current_registration || 0)); }
+      function statusLabel(event) { if (isFull(event)) return "Full"; const left = spotsLeft(event); if (left <= 3) return "Almost full"; return event.status === "live" ? "Open" : "Scheduled"; }
+      function ageValue(ageRange) { return { "18–25": 21, "25–35": 30, "35–45": 40, "45–60": 52, "60+": 65 }[ageRange] || 30; }
       function isEligible(event) {
         if (!state.resident) return true;
-        const userAge = ageValue(state.resident.age_range);
-        if (event.age_range_min && userAge < Number(event.age_range_min)) {
-          return false;
-        }
-        if (event.age_range_max && userAge > Number(event.age_range_max)) {
-          return false;
-        }
-        const genderReq = event.gender_requirement_optional;
-        if (
-          genderReq &&
-          genderReq !== "Any" &&
-          state.resident.gender_optional !== genderReq
-        ) {
-          return false;
-        }
+        const age = ageValue(state.resident.age_range);
+        if (event.age_range_min && age < Number(event.age_range_min)) return false;
+        if (event.age_range_max && age > Number(event.age_range_max)) return false;
+        const req = event.gender_requirement_optional;
+        if (req && req !== "None" && state.resident.gender_optional !== req) return false;
         return true;
       }
-
-      function eventMatchesInterests(event) {
-        const interests = asArray(state.resident?.selected_interests);
-        if (!interests.length) return true;
-        const haystack = [
-          event.title,
-          event.category,
-          event.subcategory,
-          event.description,
-        ]
-          .filter(Boolean)
-          .join(" ")
-          .toLowerCase();
-        return interests.some((interest) =>
-          haystack.includes(String(interest).toLowerCase()),
-        );
+      function eventKeywords(event) { return [event.title, event.category, event.subcategory, event.description, event.location_name, event.address].filter(Boolean).join(" ").toLowerCase(); }
+      function matchScore(event) {
+        const interests = asArray(state.resident?.selected_interests).map((x) => String(x).toLowerCase());
+        if (!interests.length) return 0;
+        const haystack = eventKeywords(event);
+        return interests.reduce((sum, interest) => sum + (haystack.includes(interest) ? 1 : 0), 0);
       }
-
-      function eventDistance(event) {
-        const center = getZone();
-        return haversineKm(
-          center.lat,
-          center.lng,
-          Number(event.lat),
-          Number(event.lng),
-        );
-      }
-
       function visibleEvents() {
-        const query = state.filters.query.trim().toLowerCase();
+        const q = state.filters.query.trim().toLowerCase();
         const radius = getRadiusKm();
         return [...state.events]
-          .filter((event) => isEligible(event))
-          .filter((event) => {
-            if (!event.lat || !event.lng) return false;
-            return eventDistance(event) <= radius;
-          })
-          .filter((event) => {
-            if (!query) return true;
-            const haystack = [
-              event.title,
-              event.category,
-              event.subcategory,
-              event.location_name,
-              event.address,
-            ]
-              .filter(Boolean)
-              .join(" ")
-              .toLowerCase();
-            return haystack.includes(query);
-          })
+          .filter((e) => ACTIVE_EVENT_STATUSES.includes(e.status || "scheduled"))
+          .filter((e) => isEligible(e))
+          .filter((e) => e.lat && e.lng && eventDistance(e) <= radius)
+          .filter((e) => !q || eventKeywords(e).includes(q))
           .sort((a, b) => {
-            const interestScore =
-              Number(eventMatchesInterests(b)) - Number(eventMatchesInterests(a));
-            if (interestScore) return interestScore;
-            const availabilityScore = Number(!isFull(b)) - Number(!isFull(a));
-            if (availabilityScore) return availabilityScore;
+            const privacy = asObject(state.resident?.privacy_settings, defaultPrivacySettings());
+            if (!privacy.hideFromMatching && !privacy.pauseRecs) {
+              const score = matchScore(b) - matchScore(a);
+              if (score) return score;
+            }
+            const avail = Number(!isFull(b)) - Number(!isFull(a));
+            if (avail) return avail;
             return new Date(a.start_time || 0) - new Date(b.start_time || 0);
           });
       }
-
-      function registrationFor(eventId) {
-        return state.registrations.find((reg) => reg.event_id === eventId);
-      }
-
-      function selectedEvent() {
-        return state.events.find((event) => event.id === state.selectedEventId);
-      }
-
-      function defaultNotificationPrefs() {
-        return {
-          nearby: true,
-          recommended: true,
-          startingSoon: true,
-          quiet: false,
-          team: true,
-          weekend: true,
-        };
-      }
-
-      function defaultPrivacySettings() {
-        return { pauseRecs: false, hideFromMatching: false };
-      }
-
-      function defaultAccessibilityPrefs() {
-        return {
-          fontScale: 1,
-          reducedMotion: false,
-          highContrast: false,
-          colorblind: false,
-        };
-      }
-
-      function dateTimeLocal(minutesAhead) {
-        const date = new Date(Date.now() + minutesAhead * 60 * 1000);
-        date.setMinutes(date.getMinutes() - date.getTimezoneOffset());
-        return date.toISOString().slice(0, 16);
-      }
-
-      function shell({ nav = "", content = "", bottomNav = "", topRight = "" }) {
-        return `
-          <section class="frame">
-            <header class="topbar">
-              <div class="brand-lockup">
-                <div class="brand-mark">CR</div>
-                <div>
-                  <p class="eyebrow">Civic Routes</p>
-                  <strong>${escapeHtml(state.role === "organiser" ? state.organiser?.name : "Rotterdam residents")}</strong>
-                </div>
-              </div>
-              <div class="btn-row">
-                ${topRight}
-                <button class="button secondary" data-action="refresh">Refresh</button>
-                <button class="button secondary" data-action="signout">Sign out</button>
-              </div>
-            </header>
-            ${state.notice ? `<div class="notice" style="margin:16px 22px 0">${escapeHtml(state.notice)}</div>` : ""}
-            ${state.error ? `<div class="error-box" style="margin:16px 22px 0">${escapeHtml(state.error)}</div>` : ""}
-            <div class="layout">
-              ${nav}
-              <main class="content">${content}</main>
-            </div>
-            ${bottomNav}
-          </section>
-          ${renderEventModal()}
-          ${renderCountDialog()}
-        `;
-      }
-
-      function nav(items) {
-        const buttons = items
-          .map(
-            (item) => `
-              <button class="nav-button ${state.tab === item.id ? "active" : ""}" data-action="tab" data-tab="${item.id}">
-                <span>${escapeHtml(item.label)}</span>
-                ${item.count !== undefined ? `<span class="nav-pill">${item.count}</span>` : ""}
-              </button>
-            `,
-          )
-          .join("");
-        return `
-          <aside class="sidebar">${buttons}</aside>
-        `;
-      }
-
-      function bottomNav(items) {
-        const buttons = items
-          .map(
-            (item) => `
-              <button class="nav-button ${state.tab === item.id ? "active" : ""}" data-action="tab" data-tab="${item.id}">
-                <span>${escapeHtml(item.label)}</span>
-                ${item.count !== undefined ? `<span class="nav-pill">${item.count}</span>` : ""}
-              </button>
-            `,
-          )
-          .join("");
-        return `<nav class="bottom-nav" style="--nav-count:${items.length}">${buttons}</nav>`;
+      function registrationFor(eventId) { return state.registrations.find((reg) => reg.event_id === eventId); }
+      function selectedEvent() { return state.events.find((event) => event.id === state.selectedEventId); }
+      function osmLink(event) { const lat = Number(event.lat); const lng = Number(event.lng); return `https://www.openstreetmap.org/?mlat=${lat}&mlon=${lng}#map=17/${lat}/${lng}`; }
+      function eventReason(event) { return event.recommendation_reason || `Recommended because this matches ${event.category || "your interests"}, ${getZone(event.zone_id).name || "your area"}, beginner-friendly format, and open capacity.`; }
+      function applyAccessibility() {
+        const prefs = asObject(state.resident?.accessibility_preferences, defaultAccessibilityPrefs());
+        document.documentElement.style.setProperty("--font-scale", String(prefs.fontScale || 1));
+        document.body.classList.toggle("high-contrast", Boolean(prefs.highContrast));
+        document.body.classList.toggle("reduced-motion", Boolean(prefs.reducedMotion));
       }
 
       function render() {
-        if (state.configError) {
-          app.innerHTML = `
-            <section class="frame">
-              <div class="hero">
-                <div class="hero-copy">
-                  <p class="eyebrow">Civic Routes</p>
-                  <h1>Connect events to real participation.</h1>
-                  <p class="muted">This deployment needs its public app configuration before residents or organisers can sign in.</p>
-                </div>
-                <div class="hero-panel">
-                  <div class="error-box">${escapeHtml(state.configError)}</div>
-                </div>
-              </div>
-            </section>
-          `;
-          return;
-        }
-
-        if (!state.session) {
-          app.innerHTML = renderAuth();
-          return;
-        }
-
-        if (state.role === "resident" && state.resident?.onboarding_complete !== true) {
-          app.innerHTML = renderOnboarding();
-          return;
-        }
-
-        if (state.role === "organiser") {
-          app.innerHTML = renderOrganiserApp();
-          return;
-        }
-
+        applyAccessibility();
+        if (state.configError) { app.innerHTML = renderMissingEnv(); return; }
+        if (!state.session) { app.innerHTML = renderAuth(); return; }
+        if (state.role === "resident" && state.resident?.onboarding_complete !== true) { app.innerHTML = renderOnboarding(); return; }
+        if (state.role === "organiser") { app.innerHTML = renderOrganiserApp(); return; }
         app.innerHTML = renderResidentApp();
-        if (state.tab === "map") {
-          window.setTimeout(renderMap, 0);
-        } else {
-          removeMap();
-        }
+        if (state.tab === "map") window.setTimeout(renderMap, 0); else removeMap();
       }
+
+      function screenShell(content, tabs = []) {
+        return `<section class="phone"><div class="screen">${brandHeader()}${messages()}${content}</div>${tabs.length ? bottomNav(tabs) : ""}${renderEventModal()}${renderCountDialog()}${renderDeleteConfirm()}</section>`;
+      }
+      function brandHeader(title = "Haven") {
+        return `<header class="brand-row"><div class="brand-row" style="margin:0"><div class="brand-mark">H</div><div><p class="eyebrow">Haven</p><p class="brand-name">${escapeHtml(title)}</p></div></div>${state.session ? `<button class="button ghost" data-action="signout">Sign out</button>` : ""}</header>`;
+      }
+      function messages() { return `${state.notice ? `<div class="notice">${escapeHtml(state.notice)}</div>` : ""}${state.error ? `<div class="error-box">${escapeHtml(state.error)}</div>` : ""}`; }
+      function bottomNav(items) { return `<nav class="bottom-nav" style="--nav-count:${items.length}">${items.map((item) => `<button class="tab-button ${state.tab === item.id ? "active" : ""}" data-action="tab" data-tab="${item.id}"><span class="tab-icon">${item.icon}</span><span>${escapeHtml(item.label)}</span></button>`).join("")}</nav>`; }
+      function renderMissingEnv() { return `<section class="phone"><div class="screen auth-screen hero-card"><div><p class="eyebrow">Haven</p><h1>Connect events to real participation.</h1><p class="muted">This deployment needs its public app configuration before residents or organisers can sign in.</p></div><div class="error-box">${escapeHtml(state.configError)}</div></div></section>`; }
 
       function renderAuth() {
         const isSignup = state.authMode === "signup";
-        return `
-          <section class="frame">
-            <div class="hero">
-              <div class="hero-copy">
-                <p class="eyebrow">Civic Routes</p>
-                <h1>Join nearby activities without awkward messaging.</h1>
-                <p class="muted">Residents get calm event invites based on chosen interests. Verified organisers create structured activities that help people arrive with confidence.</p>
-              </div>
-              <div class="hero-panel stack">
-                <div class="btn-row">
-                  <button class="button ${!isSignup ? "" : "secondary"}" data-action="auth-mode" data-mode="signin">Sign in</button>
-                  <button class="button ${isSignup ? "" : "secondary"}" data-action="auth-mode" data-mode="signup">Create account</button>
-                </div>
-                ${state.notice ? `<div class="notice">${escapeHtml(state.notice)}</div>` : ""}
-                ${state.error ? `<div class="error-box">${escapeHtml(state.error)}</div>` : ""}
-                <form id="auth-form" class="stack">
-                  ${
-                    isSignup
-                      ? `
-                        <div class="field">
-                          <label for="auth-name">Name</label>
-                          <input id="auth-name" name="name" autocomplete="name" required />
-                        </div>
-                        <div class="field">
-                          <span class="legend">Account type</span>
-                          <div class="choice-grid">
-                            <label class="choice">
-                              <input type="radio" name="role" value="resident" ${state.authRole === "resident" ? "checked" : ""} />
-                              <span>Resident</span>
-                            </label>
-                            <label class="choice">
-                              <input type="radio" name="role" value="organiser" ${state.authRole === "organiser" ? "checked" : ""} />
-                              <span>Organiser</span>
-                            </label>
-                          </div>
-                        </div>
-                      `
-                      : ""
-                  }
-                  <div class="field">
-                    <label for="auth-email">Email</label>
-                    <input id="auth-email" name="email" type="email" autocomplete="email" required />
-                  </div>
-                  <div class="field">
-                    <label for="auth-password">Password</label>
-                    <input id="auth-password" name="password" type="password" autocomplete="${isSignup ? "new-password" : "current-password"}" minlength="6" required />
-                  </div>
-                  <button class="button" type="submit">${isSignup ? "Create account" : "Sign in"}</button>
-                </form>
-              </div>
-            </div>
-          </section>
-        `;
+        return `<section class="phone"><div class="screen auth-screen hero-card"><div><p class="eyebrow">Haven</p><h1>Join nearby activities without awkward messaging.</h1><p class="muted">Residents discover low-pressure events. Verified organisers create structured activities.</p></div>${messages()}<div class="card stack"><div class="btn-row"><button class="button ${!isSignup ? "primary" : "secondary"}" data-action="auth-mode" data-mode="signin">Sign in</button><button class="button ${isSignup ? "primary" : "secondary"}" data-action="auth-mode" data-mode="signup">Create account</button></div><form id="auth-form" class="stack">${isSignup ? `<div class="field"><label for="auth-name">Name</label><input id="auth-name" name="name" autocomplete="name" required /></div><div class="field"><span class="legend">Account type</span><div class="pill-row"><label class="choice"><input type="radio" name="role" value="resident" ${state.authRole === "resident" ? "checked" : ""} /><span>Resident</span></label><label class="choice"><input type="radio" name="role" value="organiser" ${state.authRole === "organiser" ? "checked" : ""} /><span>Organiser</span></label></div></div>` : ""}<div class="field"><label for="auth-email">Email</label><input id="auth-email" name="email" type="email" autocomplete="email" required /></div><div class="field"><label for="auth-password">Password</label><input id="auth-password" name="password" type="password" autocomplete="${isSignup ? "new-password" : "current-password"}" minlength="6" required /></div><button class="button primary full-width" type="submit">${isSignup ? "Create account" : "Sign in"}</button></form></div></div></section>`;
       }
 
       function renderOnboarding() {
-        const resident = state.resident || {};
-        const selectedInterests = asArray(resident.selected_interests);
-        const notificationPrefs = asObject(
-          resident.notification_preferences,
-          defaultNotificationPrefs(),
-        );
-        return `
-          <section class="frame">
-            <header class="topbar">
-              <div class="brand-lockup">
-                <div class="brand-mark">CR</div>
-                <div>
-                  <p class="eyebrow">Resident setup</p>
-                  <strong>Choose what feels comfortable</strong>
-                </div>
-              </div>
-              <button class="button secondary" data-action="signout">Sign out</button>
-            </header>
-            <main class="content">
-              ${state.error ? `<div class="error-box">${escapeHtml(state.error)}</div>` : ""}
-              <section class="panel stack">
-                <div>
-                  <h1 style="font-size:clamp(2rem,4vw,3.5rem)">A few preferences before the map.</h1>
-                  <p class="muted">The app uses only your chosen preferences to show eligible nearby events. You can change these later.</p>
-                </div>
-                <form id="onboarding-form" class="stack">
-                  <div class="grid two">
-                    <div class="field">
-                      <label for="age_range">Age range</label>
-                      <select id="age_range" name="age_range" required>
-                        ${AGE_RANGES.map((value) => `<option ${resident.age_range === value ? "selected" : ""}>${value}</option>`).join("")}
-                      </select>
-                    </div>
-                    <div class="field">
-                      <label for="gender_optional">Gender</label>
-                      <select id="gender_optional" name="gender_optional" required>
-                        ${GENDERS.map((value) => `<option ${resident.gender_optional === value ? "selected" : ""}>${value}</option>`).join("")}
-                      </select>
-                    </div>
-                    <div class="field">
-                      <label for="location_zone_id">Area</label>
-                      <select id="location_zone_id" name="location_zone_id" required>
-                        ${zoneOptions(resident.location_zone_id || "kralingen")}
-                      </select>
-                    </div>
-                    <div class="field">
-                      <label for="radius_km">Distance radius</label>
-                      <select id="radius_km" name="radius_km" required>
-                        ${[1, 2, 5, 10, 20].map((value) => `<option value="${value}" ${Number(resident.radius_km || 5) === value ? "selected" : ""}>${value} km</option>`).join("")}
-                      </select>
-                    </div>
-                  </div>
-                  <div class="field">
-                    <span class="legend">Interests</span>
-                    <div class="choice-grid">
-                      ${checkboxChoices("selected_interests", INTERESTS, selectedInterests)}
-                    </div>
-                  </div>
-                  <div class="field">
-                    <span class="legend">Notifications</span>
-                    <div class="choice-grid">
-                      ${checkboxChoices("notification_preferences", NOTIFICATIONS, Object.keys(notificationPrefs).filter((key) => notificationPrefs[key]))}
-                    </div>
-                  </div>
-                  <button class="button" type="submit">Continue to Map</button>
-                </form>
-              </section>
-            </main>
-          </section>
-        `;
+        const r = state.resident || {};
+        const selected = asArray(r.selected_interests);
+        const notifications = asObject(r.notification_preferences, defaultNotificationPrefs());
+        return `<section class="phone"><div class="screen setup-screen">${brandHeader("Setup")}${messages()}<div class="stack"><div><p class="eyebrow">Resident setup</p><h1>A few preferences before the map.</h1><p class="muted">Haven uses only the preferences you choose. No public profiles, ratings, or public attendee lists.</p></div><form id="onboarding-form" class="stack"><div class="card stack"><h3>Profile</h3><div class="grid two"><div class="field"><label>Age range</label><select name="age_range" required>${AGE_RANGES.map((v) => `<option ${r.age_range === v ? "selected" : ""}>${v}</option>`).join("")}</select></div><div class="field"><label>Gender</label><select name="gender_optional" required>${GENDERS.map((v) => `<option ${r.gender_optional === v ? "selected" : ""}>${v}</option>`).join("")}</select></div></div></div><div class="card stack"><h3>Location</h3><div class="grid two"><div class="field"><label>Area</label><select name="location_zone_id" required>${zoneOptions(r.location_zone_id || "kralingen")}</select></div><div class="field"><label>Radius</label><select name="radius_km" required>${[1,2,5,10,20].map((v) => `<option value="${v}" ${Number(r.radius_km || 5) === v ? "selected" : ""}>${v} km</option>`).join("")}</select></div></div></div><div class="card stack"><h3>Interests</h3><div class="pill-row">${checkboxChoices("selected_interests", INTERESTS, selected)}</div></div><div class="card stack"><h3>Notifications</h3><div class="pill-row">${checkboxChoices("notification_preferences", NOTIFICATIONS, Object.keys(notifications).filter((k) => notifications[k]))}</div></div><button class="button primary full-width" type="submit">Continue to Map</button></form></div></div></section>`;
       }
 
       function renderResidentApp() {
+        const tabs = [{ id: "events", label: "Events", icon: "◻" }, { id: "map", label: "Map", icon: "⌖" }, { id: "settings", label: "Settings", icon: "⚙" }];
         const events = visibleEvents();
-        const items = [
-          { id: "events", label: "Events", count: events.length },
-          { id: "map", label: "Map", count: events.length },
-          { id: "settings", label: "Settings" },
-        ];
-        const content =
-          state.tab === "events"
-            ? renderEvents(events)
-            : state.tab === "settings"
-              ? renderSettings()
-              : renderMapScreen(events);
-        return shell({
-          nav: nav(items),
-          bottomNav: bottomNav(items),
-          content,
-          topRight: `<span class="badge">${escapeHtml(getZone().name)} within ${getRadiusKm()} km</span>`,
-        });
+        const content = state.tab === "settings" ? renderSettings() : state.tab === "map" ? renderMapScreen(events) : renderEvents(events);
+        return screenShell(content, tabs);
       }
-
       function renderOrganiserApp() {
-        const mine = state.events.filter(
-          (event) => event.organiser_id === state.organiser?.id,
-        );
-        const items = [
-          { id: "dashboard", label: "Dashboard", count: mine.length },
-          { id: "create", label: "Create Event" },
-          { id: "my-events", label: "My Events", count: mine.length },
-        ];
-        if (!["dashboard", "create", "my-events"].includes(state.tab)) {
-          state.tab = "dashboard";
-        }
-        const content =
-          state.tab === "create"
-            ? renderCreateEvent()
-            : state.tab === "my-events"
-              ? renderMyEvents(mine)
-              : renderOrganiserDashboard(mine);
-        return shell({
-          nav: nav(items),
-          bottomNav: bottomNav(items),
-          content,
-          topRight: `<span class="status-chip active">Verified organiser</span>`,
-        });
+        if (!["dashboard", "create", "my-events"].includes(state.tab)) state.tab = "dashboard";
+        const mine = state.events.filter((e) => e.organiser_id === state.organiser?.id);
+        const tabs = [{ id: "dashboard", label: "Dashboard", icon: "▣" }, { id: "create", label: "Create", icon: "+" }, { id: "my-events", label: "My Events", icon: "☰" }];
+        const content = state.tab === "create" ? renderCreateEvent() : state.tab === "my-events" ? renderMyEvents(mine) : renderOrganiserDashboard(mine);
+        return screenShell(content, tabs);
       }
 
       function renderEvents(events) {
-        const privacy = asObject(
-          state.resident?.privacy_settings,
-          defaultPrivacySettings(),
-        );
-        return `
-          <section class="stack">
-            <div class="section-heading">
-              <div>
-                <p class="eyebrow">Resident events</p>
-                <h2>Eligible activities nearby</h2>
-              </div>
-              <button class="button secondary" data-action="refresh">Refresh events</button>
-            </div>
-            ${privacy.pauseRecs ? `<div class="notice">Recommendations are paused. You can still search events manually.</div>` : ""}
-            ${renderSearchControls()}
-            <div class="event-list">
-              ${events.length ? events.map((event) => renderEventCard(event)).join("") : emptyState("No matching events are available in this radius right now.")}
-            </div>
-          </section>
-        `;
+        const privacy = asObject(state.resident?.privacy_settings, defaultPrivacySettings());
+        const matching = !privacy.pauseRecs && !privacy.hideFromMatching;
+        const recommended = matching ? events.filter((e) => matchScore(e) > 0) : [];
+        const fallback = matching ? events.filter((e) => matchScore(e) === 0) : events;
+        return `<section class="stack"><div><h1>Events</h1><p class="muted">Tailored to your preferences. Tap to see details.</p></div><form id="filter-form" class="card"><div class="field"><label>Search</label><input name="query" value="${escapeHtml(state.filters.query)}" placeholder="Search location, hobby, or category" /></div></form>${!matching ? `<div class="notice">Recommendations are paused. You can still search events manually.</div>` : ""}<div class="stack"><p class="eyebrow">${recommended.length ? "Recommended for you" : "Other events you might explore"}</p><div class="event-list">${(recommended.length ? recommended : fallback).length ? (recommended.length ? recommended : fallback).map(renderEventCard).join("") : emptyState("No events available in this radius right now.")}</div>${recommended.length && fallback.length ? `<p class="eyebrow">Other events you might explore</p><div class="event-list">${fallback.map(renderEventCard).join("")}</div>` : ""}</div></section>`;
       }
-
       function renderMapScreen(events) {
-        return `
-          <section class="stack">
-            <div class="section-heading">
-              <div>
-                <p class="eyebrow">Rotterdam map</p>
-                <h2>Nearby event map</h2>
-              </div>
-              <span class="badge">${events.length} visible</span>
-            </div>
-            ${renderSearchControls()}
-            <div class="map-shell">
-              <div id="map" aria-label="Interactive event map"></div>
-              <aside class="map-panel">
-                <div class="panel stack">
-                  <h3>Nearby events</h3>
-                  <div class="map-results">
-                    ${events.length ? events.slice(0, 8).map((event) => renderCompactEvent(event)).join("") : emptyState("No events inside this radius.")}
-                  </div>
-                </div>
-              </aside>
-            </div>
-          </section>
-        `;
+        return `<section class="stack"><div><h1>Map</h1><p class="muted">Pins show events inside your selected radius.</p></div>${renderSearchControls()}<div class="map-shell"><div id="map"></div><div class="panel stack"><h3>Nearby events</h3>${events.length ? events.slice(0,5).map(renderCompactEvent).join("") : emptyState("No events inside this radius.")}</div></div></section>`;
       }
-
       function renderSearchControls() {
-        return `
-          <form id="filter-form" class="panel grid three">
-            <div class="field">
-              <label for="map-query">Search</label>
-              <input id="map-query" name="query" value="${escapeHtml(state.filters.query)}" placeholder="Basketball, books, walking" />
-            </div>
-            <div class="field">
-              <label for="map-zone">Area</label>
-              <select id="map-zone" name="zone">${zoneOptions(getZoneId())}</select>
-            </div>
-            <div class="field">
-              <label for="map-radius">Radius</label>
-              <select id="map-radius" name="radius">
-                ${[1, 2, 5, 10, 20].map((value) => `<option value="${value}" ${getRadiusKm() === value ? "selected" : ""}>${value} km</option>`).join("")}
-              </select>
-            </div>
-          </form>
-        `;
+        return `<form id="filter-form" class="card stack"><div class="field"><label>Search</label><input name="query" value="${escapeHtml(state.filters.query)}" placeholder="Basketball, books, walking" /></div><div class="grid two"><div class="field"><label>Area</label><select name="zone" data-autosubmit="true">${zoneOptions(getZoneId())}</select></div><div class="field"><label>Radius</label><select name="radius" data-autosubmit="true">${[1,2,5,10,20].map((v) => `<option value="${v}" ${getRadiusKm() === v ? "selected" : ""}>${v} km</option>`).join("")}</select></div></div></form>`;
       }
 
       function renderSettings() {
-        const resident = state.resident || {};
-        const selectedInterests = asArray(resident.selected_interests);
-        const notifications = asObject(
-          resident.notification_preferences,
-          defaultNotificationPrefs(),
-        );
-        const privacy = asObject(
-          resident.privacy_settings,
-          defaultPrivacySettings(),
-        );
-        const accessibility = asObject(
-          resident.accessibility_preferences,
-          defaultAccessibilityPrefs(),
-        );
-        return `
-          <section class="stack">
-            <div class="section-heading">
-              <div>
-                <p class="eyebrow">Settings</p>
-                <h2>Preferences and privacy</h2>
-              </div>
-            </div>
-            <form id="settings-form" class="panel stack">
-              <div class="grid two">
-                <div class="field">
-                  <label for="settings-age">Age range</label>
-                  <select id="settings-age" name="age_range">${AGE_RANGES.map((value) => `<option ${resident.age_range === value ? "selected" : ""}>${value}</option>`).join("")}</select>
-                </div>
-                <div class="field">
-                  <label for="settings-gender">Gender</label>
-                  <select id="settings-gender" name="gender_optional">${GENDERS.map((value) => `<option ${resident.gender_optional === value ? "selected" : ""}>${value}</option>`).join("")}</select>
-                </div>
-                <div class="field">
-                  <label for="settings-zone">Area</label>
-                  <select id="settings-zone" name="location_zone_id">${zoneOptions(resident.location_zone_id || "kralingen")}</select>
-                </div>
-                <div class="field">
-                  <label for="settings-radius">Distance radius</label>
-                  <select id="settings-radius" name="radius_km">${[1, 2, 5, 10, 20].map((value) => `<option value="${value}" ${Number(resident.radius_km || 5) === value ? "selected" : ""}>${value} km</option>`).join("")}</select>
-                </div>
-              </div>
-              <div class="field">
-                <span class="legend">Interests</span>
-                <div class="choice-grid">${checkboxChoices("selected_interests", INTERESTS, selectedInterests)}</div>
-              </div>
-              <div class="field">
-                <span class="legend">Notifications</span>
-                <div class="choice-grid">${checkboxChoices("notification_preferences", NOTIFICATIONS, Object.keys(notifications).filter((key) => notifications[key]))}</div>
-              </div>
-              <div class="grid two">
-                <div class="field">
-                  <span class="legend">Accessibility</span>
-                  <div class="choice-grid">
-                    ${checkboxChoices(
-                      "accessibility_preferences",
-                      ["reducedMotion", "highContrast", "colorblind"],
-                      Object.keys(accessibility).filter((key) => accessibility[key] === true),
-                    )}
-                  </div>
-                </div>
-                <div class="field">
-                  <label for="fontScale">Text scale</label>
-                  <select id="fontScale" name="fontScale">
-                    ${[1, 1.1, 1.2, 1.35].map((value) => `<option value="${value}" ${Number(accessibility.fontScale || 1) === value ? "selected" : ""}>${value}</option>`).join("")}
-                  </select>
-                </div>
-              </div>
-              <div class="field">
-                <span class="legend">Privacy</span>
-                <div class="choice-grid">
-                  ${checkboxChoices(
-                    "privacy_settings",
-                    ["pauseRecs", "hideFromMatching"],
-                    Object.keys(privacy).filter((key) => privacy[key] === true),
-                  )}
-                </div>
-              </div>
-              <button class="button" type="submit">Save settings</button>
-            </form>
-          </section>
-        `;
+        const r = state.resident || {};
+        const selected = asArray(r.selected_interests);
+        const notifications = asObject(r.notification_preferences, defaultNotificationPrefs());
+        const accessibility = asObject(r.accessibility_preferences, defaultAccessibilityPrefs());
+        const privacy = asObject(r.privacy_settings, defaultPrivacySettings());
+        return `<section class="stack"><div><h1>Settings</h1><p class="muted">You control what Haven uses.</p></div><form id="settings-form" class="stack"><div class="card stack"><h3>Profile</h3><div class="grid two"><div class="field"><label>Age range</label><select name="age_range">${AGE_RANGES.map((v) => `<option ${r.age_range === v ? "selected" : ""}>${v}</option>`).join("")}</select></div><div class="field"><label>Gender</label><select name="gender_optional">${GENDERS.map((v) => `<option ${r.gender_optional === v ? "selected" : ""}>${v}</option>`).join("")}</select></div><div class="field"><label>Area</label><select name="location_zone_id">${zoneOptions(r.location_zone_id || "kralingen")}</select></div><div class="field"><label>Radius</label><select name="radius_km">${[1,2,5,10,20].map((v) => `<option value="${v}" ${Number(r.radius_km || 5) === v ? "selected" : ""}>${v} km</option>`).join("")}</select></div></div></div><div class="card stack"><div class="split"><h3>Hobby preferences</h3><button type="button" class="button secondary" data-action="toggle-interest-edit">Change hobby preferences</button></div><div class="pill-row ${state.settingsEditInterests ? "" : "hidden"}">${checkboxChoices("selected_interests", INTERESTS, selected)}</div><p class="muted small ${state.settingsEditInterests ? "hidden" : ""}">${selected.length ? selected.join(", ") : "No interests selected yet."}</p></div><div class="card stack"><h3>Notification preferences</h3><div class="pill-row">${checkboxChoices("notification_preferences", NOTIFICATIONS, Object.keys(notifications).filter((k) => notifications[k]))}</div></div><div class="card stack"><h3>Accessibility</h3><div class="pill-row">${checkboxChoices("accessibility_preferences", ["reducedMotion","highContrast","colorblind"], Object.keys(accessibility).filter((k) => accessibility[k] === true))}</div><div class="field"><label>Text scale</label><select name="fontScale">${[1,1.1,1.2,1.35].map((v) => `<option value="${v}" ${Number(accessibility.fontScale || 1) === v ? "selected" : ""}>${Math.round(v*100)}%</option>`).join("")}</select></div></div><div class="card stack"><h3>Privacy</h3><div class="pill-row">${checkboxChoices("privacy_settings", ["pauseRecs","hideFromMatching"], Object.keys(privacy).filter((k) => privacy[k] === true))}</div><p class="muted small">Pause recommendations keeps manual search working. Hide from matching excludes you from demand logic.</p></div><button class="button primary full-width" type="submit">Save settings</button></form><div class="card stack"><h3>Account</h3><button class="button danger" data-action="delete-data">Delete my data</button></div></section>`;
       }
 
       function renderOrganiserDashboard(mine) {
-        const totalRegistrations = mine.reduce(
-          (sum, event) => sum + Number(event.current_registration || 0),
-          0,
-        );
-        return `
-          <section class="stack">
-            <div class="section-heading">
-              <div>
-                <p class="eyebrow">Organiser dashboard</p>
-                <h2>${escapeHtml(state.organiser?.name || "Organiser")}</h2>
-              </div>
-              <span class="status-chip active">Verified organiser</span>
-            </div>
-            <div class="grid three">
-              ${statCard("Events created", mine.length)}
-              ${statCard("Saved join count", totalRegistrations)}
-              ${statCard("Open capacity", mine.reduce((sum, event) => sum + Math.max(0, Number(event.max_capacity || 0) - Number(event.current_registration || 0)), 0))}
-            </div>
-            <div class="panel stack">
-              <h3>Create a structured event</h3>
-              <p class="muted">Create structured activities for residents in your area.</p>
-              <div class="btn-row">
-                <button class="button" data-action="tab" data-tab="create">Create Event</button>
-                <button class="button secondary" data-action="tab" data-tab="my-events">My Events</button>
-              </div>
-            </div>
-          </section>
-        `;
+        const joins = mine.reduce((sum, e) => sum + Number(e.current_registration || 0), 0);
+        return `<section class="stack"><div><p class="eyebrow">Verified organiser</p><h1>${escapeHtml(state.organiser?.name || "Organiser")}</h1></div><div class="grid three">${statCard("Events", mine.length)}${statCard("Sign-ups", joins)}${statCard("Open spots", mine.reduce((s,e) => s + spotsLeft(e), 0))}</div><div class="card stack"><h3>AI proposal</h3><p class="muted">High sports demand near Kralingen. Suggested: beginner-friendly activity with a welcome host.</p><button class="button primary" data-action="tab" data-tab="create">Create event</button></div></section>`;
       }
-
       function renderCreateEvent() {
-        const defaultZone = state.organiser?.municipality_zone_id || "kralingen";
-        const zone = getZone(defaultZone);
-        return `
-          <section class="stack">
-            <div class="section-heading">
-              <div>
-                <p class="eyebrow">Create event</p>
-                <h2>New verified activity</h2>
-              </div>
-            </div>
-            <form id="create-event-form" class="panel stack">
-              <div class="grid two">
-                <div class="field">
-                  <label for="title">Title</label>
-                  <input id="title" name="title" required placeholder="Basketball street run" />
-                </div>
-                <div class="field">
-                  <label for="category">Category</label>
-                  <select id="category" name="category" required>
-                    ${INTERESTS.map((value) => `<option>${value}</option>`).join("")}
-                  </select>
-                </div>
-                <div class="field">
-                  <label for="subcategory">Subcategory</label>
-                  <input id="subcategory" name="subcategory" placeholder="3v3 beginner game" />
-                </div>
-                <div class="field">
-                  <label for="zone_id">Area</label>
-                  <select id="zone_id" name="zone_id" required>${zoneOptions(defaultZone)}</select>
-                </div>
-              </div>
-              <div class="field">
-                <label for="description">Description</label>
-                <textarea id="description" name="description" required placeholder="A structured activity with a welcome host and teams assigned on arrival."></textarea>
-              </div>
-              <div class="grid two">
-                <div class="field">
-                  <label for="location_name">Location name</label>
-                  <input id="location_name" name="location_name" required placeholder="Kralingen sports court" />
-                </div>
-                <div class="field">
-                  <label for="address">Address</label>
-                  <input id="address" name="address" required placeholder="Rotterdam" />
-                </div>
-                <div class="field">
-                  <label for="lat">Latitude</label>
-                  <input id="lat" name="lat" type="number" step="0.000001" required value="${zone.lat}" />
-                </div>
-                <div class="field">
-                  <label for="lng">Longitude</label>
-                  <input id="lng" name="lng" type="number" step="0.000001" required value="${zone.lng}" />
-                </div>
-                <div class="field">
-                  <label for="start_time">Start time</label>
-                  <input id="start_time" name="start_time" type="datetime-local" required value="${dateTimeLocal(1440)}" />
-                </div>
-                <div class="field">
-                  <label for="end_time">End time</label>
-                  <input id="end_time" name="end_time" type="datetime-local" required value="${dateTimeLocal(1560)}" />
-                </div>
-                <div class="field">
-                  <label for="min_capacity">Minimum capacity</label>
-                  <input id="min_capacity" name="min_capacity" type="number" min="1" value="4" required />
-                </div>
-                <div class="field">
-                  <label for="max_capacity">Maximum capacity</label>
-                  <input id="max_capacity" name="max_capacity" type="number" min="1" value="12" required />
-                </div>
-                <div class="field">
-                  <label for="skill_level">Skill level</label>
-                  <select id="skill_level" name="skill_level">
-                    <option>Any</option>
-                    <option>Beginner</option>
-                    <option>Intermediate</option>
-                    <option>Advanced</option>
-                  </select>
-                </div>
-                <div class="field">
-                  <label for="gender_requirement_optional">Gender requirement</label>
-                  <select id="gender_requirement_optional" name="gender_requirement_optional">
-                    <option>Any</option>
-                    ${GENDERS.map((value) => `<option>${value}</option>`).join("")}
-                  </select>
-                </div>
-                <div class="field">
-                  <label for="team_size">Team size</label>
-                  <input id="team_size" name="team_size" type="number" min="1" value="3" />
-                </div>
-                <div class="field">
-                  <label for="accessibility_info">Accessibility information</label>
-                  <input id="accessibility_info" name="accessibility_info" value="Step-free entry" />
-                </div>
-              </div>
-              <div class="field">
-                <label for="recommendation_reason">Recommendation reason</label>
-                <input id="recommendation_reason" name="recommendation_reason" value="Recommended because it matches your selected interests, area, and comfort preferences." />
-              </div>
-              <div class="choice-grid">
-                ${checkboxChoices(
-                  "event_flags",
-                  [
-                    "beginner_friendly",
-                    "people_usually_come_alone",
-                    "welcome_host_present",
-                    "team_based",
-                    "spectators_allowed",
-                    "bring_friend_allowed",
-                  ],
-                  [
-                    "beginner_friendly",
-                    "people_usually_come_alone",
-                    "welcome_host_present",
-                    "team_based",
-                    "spectators_allowed",
-                    "bring_friend_allowed",
-                  ],
-                )}
-              </div>
-              <button class="button" type="submit">Create event</button>
-            </form>
-          </section>
-        `;
+        const zoneId = state.organiser?.municipality_zone_id || "kralingen";
+        return `<section class="stack"><div><h1>Create</h1><p class="muted">Create a verified activity. Coordinates are resolved in the background.</p></div><form id="create-event-form" class="stack"><div class="card stack"><h3>Basics</h3><div class="field"><label>Title</label><input name="title" required placeholder="Beginner futsal night" /></div><div class="grid two"><div class="field"><label>Category</label><select name="category">${INTERESTS.map((v) => `<option>${v}</option>`).join("")}</select></div><div class="field"><label>Subcategory</label><input name="subcategory" placeholder="3v3 beginner game" /></div></div><div class="field"><label>Description</label><textarea name="description" required placeholder="A structured, low-pressure activity with a welcome host."></textarea></div></div><div class="card stack"><h3>Location</h3><div class="field"><label>Event location</label><input name="location_input" required placeholder="Search for a place or paste a Google Maps/OpenStreetMap link" /></div><div class="field"><label>Area</label><select name="zone_id">${zoneOptions(zoneId)}</select></div><p class="muted small">Raw latitude and longitude are saved invisibly after the location is resolved.</p></div><div class="card stack"><h3>Time and capacity</h3><div class="grid two"><div class="field"><label>Start time</label><input name="start_time" type="datetime-local" required value="${dateTimeLocal(1440)}" /></div><div class="field"><label>End time</label><input name="end_time" type="datetime-local" required value="${dateTimeLocal(1560)}" /></div><div class="field"><label>Minimum capacity</label><input name="min_capacity" type="number" min="1" value="4" required /></div><div class="field"><label>Maximum capacity</label><input name="max_capacity" type="number" min="1" value="12" required /></div></div></div><div class="card stack"><h3>Requirements</h3><div class="grid two"><div class="field"><label>Gender requirement</label><select name="gender_requirement_optional">${GENDERS.map((v) => `<option>${v}</option>`).join("")}</select></div><div class="field"><label>Skill level</label><select name="skill_level"><option>Any</option><option>Beginner</option><option>Intermediate</option><option>Advanced</option></select></div><div class="field"><label>Team size</label><input name="team_size" type="number" min="1" value="3" /></div><div class="field"><label>Accessibility information</label><input name="accessibility_info" value="Step-free entry" /></div></div><div class="pill-row">${checkboxChoices("event_flags", ["beginner_friendly","people_usually_come_alone","welcome_host_present","team_based","spectators_allowed","bring_friend_allowed"], ["beginner_friendly","people_usually_come_alone","welcome_host_present","spectators_allowed","bring_friend_allowed"])}</div></div><button class="button primary full-width" type="submit">Create event</button></form></section>`;
       }
-
-      function renderMyEvents(mine) {
-        return `
-          <section class="stack">
-            <div class="section-heading">
-              <div>
-                <p class="eyebrow">My Events</p>
-                <h2>Sign-up counts</h2>
-              </div>
-              <button class="button secondary" data-action="refresh">Refresh counts</button>
-            </div>
-            <div class="event-list">
-              ${mine.length ? mine.map((event) => renderOrganiserEvent(event)).join("") : emptyState("No organiser-created events yet.")}
-            </div>
-          </section>
-        `;
-      }
+      function renderMyEvents(mine) { return `<section class="stack"><div><h1>My Events</h1><p class="muted">Only aggregate sign-up counts are shown.</p></div><div class="event-list">${mine.length ? mine.map(renderOrganiserEvent).join("") : emptyState("No organiser-created events yet.")}</div></section>`; }
 
       function renderEventCard(event) {
         const reg = registrationFor(event.id);
         const full = isFull(event);
-        const privacy = asObject(
-          state.resident?.privacy_settings,
-          defaultPrivacySettings(),
-        );
-        const reason = event.recommendation_reason || "";
-        return `
-          <article class="card event-card">
-            <div class="split">
-              <div>
-                <div class="btn-row">
-                  <span class="status-chip ${full ? "full" : "active"}">${full ? "Full" : "Available"}</span>
-                  ${event.organiser_verified ? `<span class="badge">Verified organiser</span>` : ""}
-                  ${event.beginner_friendly ? `<span class="badge">Beginner friendly</span>` : ""}
-                </div>
-                <h3 style="margin-top:10px">${escapeHtml(event.title)}</h3>
-              </div>
-              <strong>${Number(event.current_registration || 0)} / ${Number(event.max_capacity || 0)}</strong>
-            </div>
-            <p class="muted">${escapeHtml(event.description || "")}</p>
-            <div class="event-meta">
-              <span>${escapeHtml(formatTime(event.start_time))}</span>
-              <span>${escapeHtml(event.location_name || event.address || "Rotterdam")}</span>
-              <span>${escapeHtml(event.category)}</span>
-              <span>${escapeHtml(event.skill_level || "Any")}</span>
-            </div>
-            ${!privacy.pauseRecs && reason ? `<div class="notice small">${escapeHtml(reason)}</div>` : ""}
-            ${reg ? `<span class="badge">Saved: ${escapeHtml(reg.participation_state)}${reg.bring_friend ? " with a friend" : ""}</span>` : ""}
-            <div class="btn-row">
-              <button class="button" data-action="open-event" data-id="${escapeHtml(event.id)}">View event</button>
-              <a class="button secondary" target="_blank" rel="noreferrer" href="${osmLink(event)}">Open in map</a>
-            </div>
-          </article>
-        `;
+        const left = spotsLeft(event);
+        const match = matchScore(event);
+        return `<article class="card event-card"><div class="event-title-row"><div class="event-icon">${escapeHtml((event.category || "E").slice(0,1))}</div><div style="flex:1"><div class="split"><h3>${escapeHtml(event.title)}</h3><span class="badge ${full ? "full" : left <= 3 ? "warning" : "soft"}">${full ? "Full" : left <= 3 ? "Almost full" : "Open"}</span></div><p class="muted">${escapeHtml(formatTime(event.start_time))} · ${escapeHtml(event.location_name || event.address || "Rotterdam")} · ${eventDistance(event).toFixed(1)}km</p></div></div><div class="pill-row"><span class="badge soft">${escapeHtml(event.category || "Event")}</span>${event.beginner_friendly ? `<span class="badge soft">Beginner-friendly</span>` : ""}<span class="badge soft">${full ? "Full" : `${left} spots left`}</span>${event.people_usually_come_alone ? `<span class="badge soft">Often solo</span>` : ""}${event.welcome_host_present ? `<span class="badge soft">Welcome host</span>` : ""}${event.organiser_verified ? `<span class="badge soft">Verified</span>` : ""}</div>${match > 0 ? `<p class="muted small">${escapeHtml(eventReason(event))}</p>` : `<p class="muted small">Other event you might explore.</p>`}${reg ? `<span class="badge">Saved: ${escapeHtml(reg.participation_state)}${reg.bring_friend ? " + friend" : ""}</span>` : ""}<div class="btn-row"><button class="button secondary" data-action="open-event" data-id="${escapeHtml(event.id)}">Details</button><button class="button primary" data-action="quick-join" data-id="${escapeHtml(event.id)}" ${full || reg?.participation_state === "Join" ? "disabled" : ""}>${reg?.participation_state === "Join" ? "Joined" : full ? "Full" : "Join"}</button></div></article>`;
       }
-
-      function renderCompactEvent(event) {
-        return `
-          <article class="card stack">
-            <div class="split">
-              <strong>${escapeHtml(event.title)}</strong>
-              <span class="status-chip ${isFull(event) ? "full" : "active"}">${isFull(event) ? "Full" : "Open"}</span>
-            </div>
-            <p class="small muted">${escapeHtml(formatTime(event.start_time))} at ${escapeHtml(event.location_name || "Rotterdam")}</p>
-            <button class="button secondary" data-action="open-event" data-id="${escapeHtml(event.id)}">Details</button>
-          </article>
-        `;
-      }
-
-      function renderOrganiserEvent(event) {
-        return `
-          <article class="card event-card">
-            <div class="split">
-              <div>
-                <span class="status-chip active">${escapeHtml(formatStatus(event.status))}</span>
-                <h3 style="margin-top:10px">${escapeHtml(event.title)}</h3>
-              </div>
-              <strong>${Number(event.current_registration || 0)} / ${Number(event.max_capacity || 0)}</strong>
-            </div>
-            <div class="event-meta">
-              <span>${escapeHtml(formatTime(event.start_time))}</span>
-              <span>${escapeHtml(event.location_name || event.address || "Rotterdam")}</span>
-              <span>${escapeHtml(event.category)}</span>
-            </div>
-            <div class="btn-row">
-              <button class="button" data-action="view-counts" data-id="${escapeHtml(event.id)}">View sign-up count</button>
-              <button class="button secondary" data-action="open-event" data-id="${escapeHtml(event.id)}">Preview</button>
-            </div>
-          </article>
-        `;
-      }
+      function renderCompactEvent(event) { return `<article class="card stack"><div class="split"><strong>${escapeHtml(event.title)}</strong><span class="badge ${isFull(event) ? "full" : "soft"}">${statusLabel(event)}</span></div><p class="small muted">${escapeHtml(formatTime(event.start_time))} · ${escapeHtml(event.location_name || "Rotterdam")}</p><button class="button secondary" data-action="open-event" data-id="${escapeHtml(event.id)}">Details</button></article>`; }
+      function renderOrganiserEvent(event) { return `<article class="card event-card"><div class="split"><div><span class="badge ${isFull(event) ? "full" : "soft"}">${statusLabel(event)}</span><h3 style="margin-top:8px">${escapeHtml(event.title)}</h3></div><strong>${Number(event.current_registration || 0)} / ${Number(event.max_capacity || 0)}</strong></div><p class="muted small">${escapeHtml(formatTime(event.start_time))} · ${escapeHtml(event.location_name || event.address || "Rotterdam")}</p><div class="btn-row"><button class="button secondary" data-action="view-counts" data-id="${escapeHtml(event.id)}">View sign-up count</button><button class="button secondary" data-action="open-event" data-id="${escapeHtml(event.id)}">Preview</button></div></article>`; }
 
       function renderEventModal() {
         const event = selectedEvent();
         if (!event) return "";
         const reg = registrationFor(event.id);
-        const draft = state.detailDraft || {
-          participation_state: reg?.participation_state || "",
-          bring_friend: Boolean(reg?.bring_friend),
-        };
+        const draft = state.detailDraft || { participation_state: reg?.participation_state || "", bring_friend: Boolean(reg?.bring_friend) };
         const full = isFull(event);
         const eligible = isEligible(event);
-        return `
-          <div class="modal-backdrop" data-action="close-event">
-            <section class="modal" role="dialog" aria-modal="true" aria-labelledby="event-title" data-modal-body>
-              <header class="modal-header">
-                <div>
-                  <p class="eyebrow">Event details</p>
-                  <h2 id="event-title">${escapeHtml(event.title)}</h2>
-                </div>
-                <button class="button secondary" data-action="close-event">Close</button>
-              </header>
-              <div class="modal-body stack">
-                <div class="btn-row">
-                  <span class="status-chip ${full ? "full" : "active"}">${full ? "Full" : "Available"}</span>
-                  ${event.organiser_verified ? `<span class="badge">Verified organiser</span>` : ""}
-                  ${event.people_usually_come_alone ? `<span class="badge">People usually come alone</span>` : ""}
-                  ${event.welcome_host_present ? `<span class="badge">Welcome host present</span>` : ""}
-                </div>
-                <p class="muted">${escapeHtml(event.description || "")}</p>
-                <div class="grid two">
-                  ${detailItem("Time", formatTime(event.start_time))}
-                  ${detailItem("Location", event.location_name || event.address || "Rotterdam")}
-                  ${detailItem("Category", event.category)}
-                  ${detailItem("Skill level", event.skill_level || "Any")}
-                  ${detailItem("Capacity", `${Number(event.current_registration || 0)} / ${Number(event.max_capacity || 0)}`)}
-                  ${detailItem("Accessibility", event.accessibility_info || "Not specified")}
-                </div>
-                ${
-                  !eligible
-                    ? `<div class="error-box">Your profile does not match this event's requirements.</div>`
-                    : ""
-                }
-                ${
-                  state.role === "resident"
-                    ? `
-                      <div class="panel stack">
-                        <h3>Participation</h3>
-                        <div class="choice-grid">
-                          ${MAIN_STATES.map((value) => {
-                            const disabled = value === "Join" && (full || !eligible);
-                            return `
-                              <button
-                                class="button ${draft.participation_state === value ? "" : "secondary"}"
-                                data-action="select-state"
-                                data-state="${value}"
-                                ${disabled ? "disabled" : ""}
-                              >${escapeHtml(value)}</button>
-                            `;
-                          }).join("")}
-                        </div>
-                        <label class="choice">
-                          <input type="checkbox" data-action="toggle-friend" ${draft.bring_friend ? "checked" : ""} ${event.bring_friend_allowed ? "" : "disabled"} />
-                          <span>Bring a friend</span>
-                        </label>
-                        <div class="btn-row">
-                          <button class="button" data-action="save-registration" data-id="${escapeHtml(event.id)}">Save status</button>
-                          <a class="button secondary" target="_blank" rel="noreferrer" href="${osmLink(event)}">Open location</a>
-                        </div>
-                      </div>
-                    `
-                    : `
-                      <div class="panel stack">
-                        <h3>Organiser preview</h3>
-                        <p class="muted">Residents can save one participation state and optionally bring a friend. Organisers only see anonymized counts.</p>
-                        <div class="btn-row">
-                          <button class="button" data-action="view-counts" data-id="${escapeHtml(event.id)}">View sign-up count</button>
-                          <a class="button secondary" target="_blank" rel="noreferrer" href="${osmLink(event)}">Open location</a>
-                        </div>
-                      </div>
-                    `
-                }
-              </div>
-            </section>
-          </div>
-        `;
+        return `<div class="modal-backdrop" data-action="close-event"><section class="modal" data-modal-body><header class="modal-header"><div><p class="eyebrow">Event details</p><h2>${escapeHtml(event.title)}</h2></div><button class="button secondary" data-action="close-event">Close</button></header><div class="modal-body stack"><div class="pill-row"><span class="badge ${full ? "full" : "soft"}">${statusLabel(event)}</span>${event.organiser_verified ? `<span class="badge soft">Verified organiser</span>` : ""}${event.welcome_host_present ? `<span class="badge soft">Welcome host</span>` : ""}${event.people_usually_come_alone ? `<span class="badge soft">People often come alone</span>` : ""}</div><p class="muted">${escapeHtml(event.description || "")}</p><div class="grid two">${detailItem("Time", formatTime(event.start_time))}${detailItem("Location", event.location_name || event.address || "Rotterdam")}${detailItem("Organiser", event.organiser_name || "Verified organiser")}${detailItem("Capacity", `${Number(event.current_registration || 0)} / ${Number(event.max_capacity || 0)}`)}${detailItem("Skill", event.skill_level || "Any")}${detailItem("Accessibility", event.accessibility_info || "Not specified")}</div>${event.recommendation_reason ? `<div class="notice small">${escapeHtml(event.recommendation_reason)}</div>` : ""}${!eligible ? `<div class="error-box">Your profile does not match this event's requirements.</div>` : ""}${state.role === "resident" ? `<div class="card stack"><h3>Participation</h3><div class="pill-row">${MAIN_STATES.map((s) => `<button class="button ${draft.participation_state === s ? "primary" : "secondary"}" data-action="select-state" data-state="${s}" ${s === "Join" && (full || !eligible || state.savingRegistration) ? "disabled" : ""}>${escapeHtml(s)}</button>`).join("")}</div><label class="choice"><input type="checkbox" data-action="toggle-friend" ${draft.bring_friend ? "checked" : ""} ${event.bring_friend_allowed ? "" : "disabled"} /><span>Bring a friend</span></label><div class="btn-row"><button class="button primary" data-action="save-registration" data-id="${escapeHtml(event.id)}" ${state.savingRegistration ? "disabled" : ""}>${state.savingRegistration ? "Saving..." : "Save status"}</button><a class="button secondary" target="_blank" rel="noreferrer" href="${osmLink(event)}">Open location</a></div>${draft.participation_state === "Join" ? renderArrival(event) : ""}</div>` : `<div class="card stack"><h3>Organiser preview</h3><p class="muted">Residents can save one participation state. Organisers see anonymised counts only.</p><button class="button secondary" data-action="view-counts" data-id="${escapeHtml(event.id)}">View sign-up count</button></div>`}</div></section></div>`;
       }
+      function renderArrival(event) { return `<div class="notice small"><strong>Arrival Companion</strong><br>Address: ${escapeHtml(event.location_name || event.address || "Rotterdam")}<br>Bring: water bottle and comfortable shoes.<br>First 10 minutes: find the welcome host, warm up casually, and wait for team placement.<br>Team preview: You + 2 others if team-based.<br><button class="button secondary" style="margin-top:10px" data-action="im-here">I'm here</button></div>`; }
+      function renderCountDialog() { const d = state.countDialog; if (!d) return ""; return `<div class="modal-backdrop" data-action="close-counts"><section class="modal" data-modal-body><header class="modal-header"><div><p class="eyebrow">Anonymised count</p><h2>${escapeHtml(d.title)}</h2></div><button class="button secondary" data-action="close-counts">Close</button></header><div class="modal-body stack"><div class="grid three">${statCard("Saved rows", d.total)}${statCard("Join", d.statuses.Join || 0)}${statCard("Bring friend", d.bringFriend || 0)}</div><div class="grid two">${MAIN_STATES.map((s) => statCard(s, d.statuses[s] || 0)).join("")}</div><p class="muted small">Resident names, emails, and public attendee lists are not shown.</p></div></section></div>`; }
+      function renderDeleteConfirm() { if (!state.deleteConfirm) return ""; return `<div class="modal-backdrop" data-action="cancel-delete"><section class="modal" data-modal-body><header class="modal-header"><div><p class="eyebrow">Privacy</p><h2>Delete your data?</h2></div><button class="button secondary" data-action="cancel-delete">Cancel</button></header><div class="modal-body stack"><p class="muted">This prototype will deactivate your resident profile and remove you from personalised matching. Municipality dashboards keep only anonymous aggregate counts.</p><button class="button danger" data-action="confirm-delete">Delete my data</button></div></section></div>`; }
 
-      function renderCountDialog() {
-        const dialog = state.countDialog;
-        if (!dialog) return "";
-        return `
-          <div class="modal-backdrop" data-action="close-counts">
-            <section class="modal" role="dialog" aria-modal="true" data-modal-body>
-              <header class="modal-header">
-                <div>
-                  <p class="eyebrow">Anonymized count</p>
-                  <h2>${escapeHtml(dialog.title)}</h2>
-                </div>
-                <button class="button secondary" data-action="close-counts">Close</button>
-              </header>
-              <div class="modal-body stack">
-                <div class="grid three">
-                  ${statCard("Saved rows", dialog.total)}
-                  ${statCard("Join", dialog.statuses.Join || 0)}
-                  ${statCard("Bring a friend", dialog.bringFriend || 0)}
-                </div>
-                <div class="grid two">
-                  ${MAIN_STATES.map((status) => statCard(status, dialog.statuses[status] || 0)).join("")}
-                </div>
-                <p class="muted small">Resident names, profiles, emails, and attendee lists are not shown.</p>
-              </div>
-            </section>
-          </div>
-        `;
-      }
-
-      function detailItem(label, value) {
-        return `
-          <div class="card">
-            <p class="eyebrow">${escapeHtml(label)}</p>
-            <strong>${escapeHtml(value)}</strong>
-          </div>
-        `;
-      }
-
-      function statCard(label, value) {
-        return `
-          <div class="card">
-            <p class="eyebrow">${escapeHtml(label)}</p>
-            <h2>${escapeHtml(value)}</h2>
-          </div>
-        `;
-      }
-
-      function checkboxChoices(name, options, selected) {
-        const selectedSet = new Set(selected);
-        return options
-          .map(
-            (value) => `
-              <label class="choice">
-                <input type="checkbox" name="${escapeHtml(name)}" value="${escapeHtml(value)}" ${selectedSet.has(value) ? "checked" : ""} />
-                <span>${escapeHtml(value)}</span>
-              </label>
-            `,
-          )
-          .join("");
-      }
-
-      function zoneOptions(selected) {
-        return Object.entries(ZONES)
-          .map(
-            ([id, zone]) =>
-              `<option value="${id}" ${selected === id ? "selected" : ""}>${escapeHtml(zone.name)}</option>`,
-          )
-          .join("");
-      }
-
-      function emptyState(text) {
-        return `<div class="empty">${escapeHtml(text)}</div>`;
-      }
-
-      function osmLink(event) {
-        const lat = Number(event.lat);
-        const lng = Number(event.lng);
-        return `https://www.openstreetmap.org/?mlat=${lat}&mlon=${lng}#map=17/${lat}/${lng}`;
-      }
-
-      function removeMap() {
-        if (mapInstance) {
-          mapInstance.remove();
-          mapInstance = null;
-          markerLayer = null;
-          radiusLayer = null;
-        }
-      }
+      function detailItem(label, value) { return `<div class="card"><p class="eyebrow">${escapeHtml(label)}</p><strong>${escapeHtml(value)}</strong></div>`; }
+      function statCard(label, value) { return `<div class="card"><p class="eyebrow">${escapeHtml(label)}</p><h2>${escapeHtml(value)}</h2></div>`; }
+      function emptyState(text) { return `<div class="empty">${escapeHtml(text)}</div>`; }
+      function zoneOptions(selected) { return Object.entries(ZONES).map(([id, z]) => `<option value="${id}" ${selected === id ? "selected" : ""}>${escapeHtml(z.name)}</option>`).join(""); }
+      function checkboxChoices(name, options, selected) { const s = new Set(selected); return options.map((v) => `<label class="choice"><input type="checkbox" name="${escapeHtml(name)}" value="${escapeHtml(v)}" ${s.has(v) ? "checked" : ""} /><span>${escapeHtml(labelFor(v))}</span></label>`).join(""); }
+      function labelFor(value) { return { pauseRecs: "Pause recommendations", hideFromMatching: "Stop matching", reducedMotion: "Reduced motion", highContrast: "High contrast", colorblind: "Colorblind theme", beginner_friendly: "Beginner-friendly", people_usually_come_alone: "People often come alone", welcome_host_present: "Welcome host", team_based: "Team-based", spectators_allowed: "Spectators allowed", bring_friend_allowed: "Bring-a-friend allowed" }[value] || value; }
 
       function renderMap() {
-        const mapNode = document.querySelector("#map");
-        if (!mapNode) return;
-        if (!window.L) {
-          mapNode.innerHTML =
-            '<div class="empty">The map library could not load. Check the network connection and refresh.</div>';
-          return;
-        }
+        const node = document.querySelector("#map");
+        if (!node) return;
+        if (!window.L) { node.innerHTML = `<div class="empty">The map library could not load.</div>`; return; }
         removeMap();
         const center = getZone();
-        mapInstance = window.L.map(mapNode, {
-          zoomControl: true,
-          attributionControl: true,
-        }).setView([center.lat, center.lng], getRadiusKm() <= 2 ? 14 : 12);
-
-        window.L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-          maxZoom: 19,
-          attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
-        }).addTo(mapInstance);
-
-        radiusLayer = window.L.circle([center.lat, center.lng], {
-          radius: getRadiusKm() * 1000,
-          color: "#076b4f",
-          weight: 1,
-          fillColor: "#076b4f",
-          fillOpacity: 0.08,
-        }).addTo(mapInstance);
-
+        mapInstance = window.L.map(node, { zoomControl: true }).setView([center.lat, center.lng], getRadiusKm() <= 2 ? 14 : 12);
+        window.L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", { maxZoom: 19, attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>' }).addTo(mapInstance);
+        radiusLayer = window.L.circle([center.lat, center.lng], { radius: getRadiusKm() * 1000, color: "#00d2c4", weight: 2, fillColor: "#00d2c4", fillOpacity: 0.07 }).addTo(mapInstance);
         markerLayer = window.L.layerGroup().addTo(mapInstance);
         visibleEvents().forEach((event) => {
-          const pinClass = isFull(event) ? "pin-full" : "pin-active";
-          const marker = window.L.marker([Number(event.lat), Number(event.lng)], {
-            icon: window.L.divIcon({
-              className: `event-pin ${pinClass}`,
-              html: "<span></span>",
-              iconSize: [26, 34],
-              iconAnchor: [13, 34],
-            }),
-            title: event.title,
-          });
+          const marker = window.L.marker([Number(event.lat), Number(event.lng)], { icon: window.L.divIcon({ className: `event-pin ${isFull(event) ? "pin-full" : "pin-active"}`, html: "<span></span>", iconSize: [28, 36], iconAnchor: [14, 36] }), title: event.title });
           marker.on("click", () => openEvent(event.id));
           marker.addTo(markerLayer);
         });
-
         window.setTimeout(() => mapInstance?.invalidateSize(), 80);
       }
+      function removeMap() { if (mapInstance) { mapInstance.remove(); mapInstance = null; markerLayer = null; radiusLayer = null; } }
 
       async function init() {
         const env = window.CIVIC_ROUTES_ENV || {};
-        if (!env.VITE_SUPABASE_URL || !env.VITE_SUPABASE_PUBLISHABLE_KEY) {
-          state.configError = MISSING_ENV_MESSAGE;
-          render();
-          return;
-        }
-
-        let createClient;
+        if (!env.VITE_SUPABASE_URL || !env.VITE_SUPABASE_PUBLISHABLE_KEY) { state.configError = MISSING_ENV_MESSAGE; render(); return; }
         try {
-          ({ createClient } = await import(
-            "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm"
-          ));
+          const { createClient } = await import("https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm");
+          state.supabase = createClient(env.VITE_SUPABASE_URL, env.VITE_SUPABASE_PUBLISHABLE_KEY, { auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true } });
         } catch {
-          state.configError =
-            "The app could not load its browser dependencies. Refresh the page or check the network connection.";
-          render();
-          return;
+          state.configError = "The app could not load its browser dependencies. Refresh the page or check the network connection."; render(); return;
         }
-
-        state.supabase = createClient(
-          env.VITE_SUPABASE_URL,
-          env.VITE_SUPABASE_PUBLISHABLE_KEY,
-          {
-            auth: {
-              persistSession: true,
-              autoRefreshToken: true,
-              detectSessionInUrl: true,
-            },
-          },
-        );
-
-        state.supabase.auth.onAuthStateChange((_event, session) => {
-          window.setTimeout(() => handleSession(session), 0);
-        });
-
+        state.supabase.auth.onAuthStateChange((_event, session) => window.setTimeout(() => handleSession(session), 0));
         const { data, error } = await state.supabase.auth.getSession();
-        if (error) {
-          setError(error.message);
-          return;
-        }
+        if (error) { setError(error.message); return; }
         await handleSession(data.session);
       }
-
       async function handleSession(session) {
-        state.session = session;
-        state.user = session?.user || null;
-        state.error = "";
-        state.notice = "";
-        state.selectedEventId = "";
-        state.detailDraft = null;
-        state.countDialog = null;
-
-        if (!session?.user) {
-          state.role = "";
-          state.resident = null;
-          state.organiser = null;
-          state.events = [];
-          state.registrations = [];
-          state.tab = "map";
-          render();
-          return;
-        }
-
+        state.session = session; state.user = session?.user || null; state.error = ""; state.notice = ""; state.selectedEventId = ""; state.detailDraft = null; state.countDialog = null;
+        if (!session?.user) { state.role = ""; state.resident = null; state.organiser = null; state.events = []; state.registrations = []; state.tab = "map"; render(); return; }
         await loadProfile();
       }
-
       async function loadProfile() {
-        const metadata = state.user?.user_metadata || {};
-        const role = metadata.role || "resident";
-        state.role = role === "organiser" ? "organiser" : "resident";
-
-        if (state.role === "organiser") {
-          const organiser = await loadProfileRow("organisers");
-          if (!organiser) return;
-          state.organiser = organiser;
-          state.resident = null;
-          if (organiser.verification_status !== "verified") {
-            const { data } = await state.supabase
-              .from("organisers")
-              .update({ verification_status: "verified" })
-              .eq("id", organiser.id)
-              .select("*")
-              .single();
-            if (data) state.organiser = data;
+        const role = state.user?.user_metadata?.role === "organiser" ? "organiser" : "resident";
+        state.role = role;
+        if (role === "organiser") {
+          const org = await loadProfileRow("organisers"); if (!org) return;
+          state.organiser = org; state.resident = null;
+          if (org.verification_status !== "verified") {
+            const { data } = await state.supabase.from("organisers").update({ verification_status: "verified" }).eq("id", org.id).select("*").single(); if (data) state.organiser = data;
           }
-          state.tab = ["dashboard", "create", "my-events"].includes(state.tab)
-            ? state.tab
-            : "dashboard";
-          await fetchEvents();
-          render();
-          return;
+          if (!["dashboard", "create", "my-events"].includes(state.tab)) state.tab = "dashboard";
+          await fetchEvents(); render(); return;
         }
-
-        const resident = await loadProfileRow("users");
-        if (!resident) return;
-        state.resident = resident;
-        state.organiser = null;
-        if (!resident.full_name && metadata.name) {
-          await state.supabase
-            .from("users")
-            .update({ full_name: metadata.name })
-            .eq("id", resident.id);
-        }
-        state.tab = ["events", "map", "settings"].includes(state.tab)
-          ? state.tab
-          : "map";
-        state.filters.zone = state.filters.zone || resident.location_zone_id || "";
-        state.filters.radius = state.filters.radius || String(resident.radius_km || "");
-        await fetchEvents();
-        await fetchRegistrations();
-        render();
+        const resident = await loadProfileRow("users"); if (!resident) return;
+        state.resident = resident; state.organiser = null;
+        if (!["events", "map", "settings"].includes(state.tab)) state.tab = "map";
+        state.filters.zone ||= resident.location_zone_id || ""; state.filters.radius ||= String(resident.radius_km || "");
+        await fetchEvents(); await fetchRegistrations(); render();
       }
-
       async function loadProfileRow(table) {
-        for (let attempt = 0; attempt < 5; attempt += 1) {
-          const { data, error } = await state.supabase
-            .from(table)
-            .select("*")
-            .eq("auth_user_id", state.user.id)
-            .maybeSingle();
-
-          if (error) {
-            setError(error.message);
-            return null;
-          }
+        for (let i = 0; i < 5; i++) {
+          const { data, error } = await state.supabase.from(table).select("*").eq("auth_user_id", state.user.id).maybeSingle();
+          if (error) { setError(error.message); return null; }
           if (data) return data;
-          await new Promise((resolve) => window.setTimeout(resolve, 350));
+          await new Promise((r) => setTimeout(r, 350));
         }
-        setError(
-          "Profile row not found. Check that the Supabase signup trigger migration is applied.",
-        );
-        return null;
+        setError("Profile row not found. Check that the Supabase signup trigger migration is applied."); return null;
       }
-
       async function fetchEvents() {
         if (!state.supabase || !state.session) return;
-        const { data, error } = await state.supabase
-          .from("events")
-          .select("*")
-          .in("status", ACTIVE_EVENT_STATUSES)
-          .order("start_time", { ascending: true });
-        if (error) {
-          state.events = [];
-          setError(error.message);
-          return;
-        }
+        const { data, error } = await state.supabase.from("events").select("*").in("status", ACTIVE_EVENT_STATUSES).order("start_time", { ascending: true });
+        if (error) { state.events = []; setError(error.message); return; }
         state.events = data || [];
       }
-
       async function fetchRegistrations() {
-        if (!state.resident) {
-          state.registrations = [];
-          return;
-        }
-        const { data, error } = await state.supabase
-          .from("event_registrations")
-          .select("*")
-          .eq("user_id", state.resident.id);
-        if (error) {
-          setError(error.message);
-          return;
-        }
+        if (!state.resident) { state.registrations = []; return; }
+        const { data, error } = await state.supabase.from("event_registrations").select("*").eq("user_id", state.resident.id);
+        if (error) { setError(error.message); return; }
         state.registrations = data || [];
       }
 
       async function handleAuthSubmit(form) {
-        const formData = new FormData(form);
-        const email = String(formData.get("email") || "").trim();
-        const password = String(formData.get("password") || "");
-        if (state.authMode === "signin") {
-          const { error } = await state.supabase.auth.signInWithPassword({
-            email,
-            password,
-          });
-          if (error) setError(error.message);
-          return;
-        }
-
-        const role = String(formData.get("role") || "resident");
-        const name = String(formData.get("name") || "").trim();
-        const metadata =
-          role === "organiser"
-            ? {
-                role: "organiser",
-                name,
-                type: "community_center",
-                zone_id: "kralingen",
-              }
-            : { role: "resident", name, zone_id: "kralingen" };
-
-        const { data, error } = await state.supabase.auth.signUp({
-          email,
-          password,
-          options: { data: metadata },
-        });
-        if (error) {
-          setError(error.message);
-          return;
-        }
-        if (!data.session) {
-          setNotice("Account created. Confirm your email, then sign in.");
-        }
+        const fd = new FormData(form); const email = String(fd.get("email") || "").trim(); const password = String(fd.get("password") || "");
+        if (state.authMode === "signin") { const { error } = await state.supabase.auth.signInWithPassword({ email, password }); if (error) setError(error.message); return; }
+        const role = String(fd.get("role") || "resident"); const name = String(fd.get("name") || "").trim();
+        const metadata = role === "organiser" ? { role, name, type: "community_center", zone_id: "kralingen" } : { role, name, zone_id: "kralingen" };
+        const { data, error } = await state.supabase.auth.signUp({ email, password, options: { data: metadata } });
+        if (error) { setError(error.message); return; }
+        if (!data.session) setNotice("Account created. Confirm your email, then sign in.");
       }
-
       async function handleOnboardingSubmit(form) {
-        const formData = new FormData(form);
-        const selectedInterests = formData.getAll("selected_interests");
-        const notificationChoices = new Set(
-          formData.getAll("notification_preferences"),
-        );
-        if (!selectedInterests.length) {
-          setError("Choose at least one interest before continuing.");
-          return;
-        }
-        const notificationPreferences = Object.fromEntries(
-          NOTIFICATIONS.map((key) => [key, notificationChoices.has(key)]),
-        );
-
-        const payload = {
-          age_range: String(formData.get("age_range")),
-          gender_optional: String(formData.get("gender_optional")),
-          location_zone_id: String(formData.get("location_zone_id")),
-          radius_km: Number(formData.get("radius_km")),
-          selected_interests: selectedInterests,
-          notification_preferences: notificationPreferences,
-          onboarding_complete: true,
-        };
-
-        const { error } = await state.supabase
-          .from("users")
-          .update(payload)
-          .eq("id", state.resident.id);
-        if (error) {
-          setError(error.message);
-          return;
-        }
-        state.filters.zone = payload.location_zone_id;
-        state.filters.radius = String(payload.radius_km);
-        await loadProfile();
-        toast("Preferences saved. The map is ready.");
+        const fd = new FormData(form); const interests = fd.getAll("selected_interests"); if (!interests.length) { setError("Choose at least one interest before continuing."); return; }
+        const notificationChoices = new Set(fd.getAll("notification_preferences"));
+        const payload = { age_range: String(fd.get("age_range")), gender_optional: String(fd.get("gender_optional")), location_zone_id: String(fd.get("location_zone_id")), radius_km: Number(fd.get("radius_km")), selected_interests: interests, notification_preferences: Object.fromEntries(NOTIFICATIONS.map((k) => [k, notificationChoices.has(k)])), onboarding_complete: true };
+        const { error } = await state.supabase.from("users").update(payload).eq("id", state.resident.id);
+        if (error) { setError(error.message); return; }
+        state.filters.zone = payload.location_zone_id; state.filters.radius = String(payload.radius_km); await loadProfile(); toast("Preferences saved. The map is ready.");
       }
-
       async function handleSettingsSubmit(form) {
-        const formData = new FormData(form);
-        const notificationChoices = new Set(
-          formData.getAll("notification_preferences"),
-        );
-        const accessibilityChoices = new Set(
-          formData.getAll("accessibility_preferences"),
-        );
-        const privacyChoices = new Set(formData.getAll("privacy_settings"));
-
-        const payload = {
-          age_range: String(formData.get("age_range")),
-          gender_optional: String(formData.get("gender_optional")),
-          location_zone_id: String(formData.get("location_zone_id")),
-          radius_km: Number(formData.get("radius_km")),
-          selected_interests: formData.getAll("selected_interests"),
-          notification_preferences: Object.fromEntries(
-            NOTIFICATIONS.map((key) => [key, notificationChoices.has(key)]),
-          ),
-          accessibility_preferences: {
-            fontScale: Number(formData.get("fontScale") || 1),
-            reducedMotion: accessibilityChoices.has("reducedMotion"),
-            highContrast: accessibilityChoices.has("highContrast"),
-            colorblind: accessibilityChoices.has("colorblind"),
-          },
-          privacy_settings: {
-            pauseRecs: privacyChoices.has("pauseRecs"),
-            hideFromMatching: privacyChoices.has("hideFromMatching"),
-          },
-        };
-
-        const { error } = await state.supabase
-          .from("users")
-          .update(payload)
-          .eq("id", state.resident.id);
-        if (error) {
-          setError(error.message);
-          return;
-        }
-        state.filters.zone = payload.location_zone_id;
-        state.filters.radius = String(payload.radius_km);
-        await loadProfile();
-        toast("Settings saved.");
+        const fd = new FormData(form); const notificationChoices = new Set(fd.getAll("notification_preferences")); const accessibilityChoices = new Set(fd.getAll("accessibility_preferences")); const privacyChoices = new Set(fd.getAll("privacy_settings"));
+        const payload = { age_range: String(fd.get("age_range")), gender_optional: String(fd.get("gender_optional")), location_zone_id: String(fd.get("location_zone_id")), radius_km: Number(fd.get("radius_km")), selected_interests: fd.getAll("selected_interests"), notification_preferences: Object.fromEntries(NOTIFICATIONS.map((k) => [k, notificationChoices.has(k)])), accessibility_preferences: { fontScale: Number(fd.get("fontScale") || 1), reducedMotion: accessibilityChoices.has("reducedMotion"), highContrast: accessibilityChoices.has("highContrast"), colorblind: accessibilityChoices.has("colorblind") }, privacy_settings: { pauseRecs: privacyChoices.has("pauseRecs"), hideFromMatching: privacyChoices.has("hideFromMatching"), deactivated: false } };
+        const { error } = await state.supabase.from("users").update(payload).eq("id", state.resident.id);
+        if (error) { setError(error.message); return; }
+        state.filters.zone = payload.location_zone_id; state.filters.radius = String(payload.radius_km); await loadProfile(); toast("Settings saved.");
       }
-
+      function extractCoords(input) {
+        const text = String(input || "");
+        let match = text.match(/@(-?\d+\.\d+),\s*(-?\d+\.\d+)/); if (match) return { lat: Number(match[1]), lng: Number(match[2]) };
+        match = text.match(/[?&](?:q|query)=(-?\d+\.\d+),\s*(-?\d+\.\d+)/); if (match) return { lat: Number(match[1]), lng: Number(match[2]) };
+        const url = new URL(text, window.location.href); const mlat = url.searchParams.get("mlat"); const mlon = url.searchParams.get("mlon"); if (mlat && mlon) return { lat: Number(mlat), lng: Number(mlon) };
+        match = text.match(/(-?\d+\.\d+)\s*,\s*(-?\d+\.\d+)/); if (match) return { lat: Number(match[1]), lng: Number(match[2]) };
+        return null;
+      }
+      async function resolveLocation(input, zoneId) {
+        const trimmed = String(input || "").trim();
+        if (/maps\.app\.goo\.gl|goo\.gl\/maps/.test(trimmed)) throw new Error("Could not read that short link. Please paste the full URL or type the address.");
+        const coords = extractCoords(trimmed); if (coords) return { ...coords, name: trimmed.slice(0, 90) };
+        const response = await fetch(`https://nominatim.openstreetmap.org/search?format=json&limit=1&countrycodes=nl&q=${encodeURIComponent(`${trimmed} Rotterdam`)}`);
+        const data = await response.json(); if (!data?.length) throw new Error("Could not find that location. Please use a clearer address or paste a map link.");
+        return { lat: Number(data[0].lat), lng: Number(data[0].lon), name: data[0].display_name || trimmed };
+      }
       async function handleCreateEventSubmit(form) {
         if (!state.organiser) return;
-        const formData = new FormData(form);
-        const flags = new Set(formData.getAll("event_flags"));
-        const zoneId = String(formData.get("zone_id") || "kralingen");
-        const genderRequirement = String(
-          formData.get("gender_requirement_optional") || "Any",
-        );
-        const payload = {
-          organiser_id: state.organiser.id,
-          organiser_name: state.organiser.name,
-          organiser_verified: true,
-          title: String(formData.get("title") || "").trim(),
-          category: String(formData.get("category") || "Sports"),
-          subcategory: String(formData.get("subcategory") || "").trim(),
-          icon: "pin",
-          description: String(formData.get("description") || "").trim(),
-          zone_id: zoneId,
-          location_name: String(formData.get("location_name") || "").trim(),
-          address: String(formData.get("address") || "").trim(),
-          lat: Number(formData.get("lat") || getZone(zoneId).lat),
-          lng: Number(formData.get("lng") || getZone(zoneId).lng),
-          start_time: new Date(String(formData.get("start_time"))).toISOString(),
-          end_time: new Date(String(formData.get("end_time"))).toISOString(),
-          min_capacity: Number(formData.get("min_capacity") || 4),
-          max_capacity: Number(formData.get("max_capacity") || 12),
-          current_registration: 0,
-          status: "scheduled",
-          beginner_friendly: flags.has("beginner_friendly"),
-          skill_level: String(formData.get("skill_level") || "Any"),
-          age_range_min: 18,
-          age_range_max: 99,
-          gender_requirement_optional:
-            genderRequirement === "Any" ? null : genderRequirement,
-          accessibility_info: String(
-            formData.get("accessibility_info") || "Step-free entry",
-          ),
-          equipment_needed: [],
-          people_usually_come_alone: flags.has("people_usually_come_alone"),
-          welcome_host_present: flags.has("welcome_host_present"),
-          verified_organiser_required: true,
-          team_based: flags.has("team_based"),
-          team_size: flags.has("team_based")
-            ? Number(formData.get("team_size") || 3)
-            : null,
-          spectators_allowed: flags.has("spectators_allowed"),
-          bring_friend_allowed: flags.has("bring_friend_allowed"),
-          recommendation_reason: String(
-            formData.get("recommendation_reason") || "",
-          ),
-        };
-
+        const fd = new FormData(form); const flags = new Set(fd.getAll("event_flags")); const zoneId = String(fd.get("zone_id") || "kralingen");
+        let location;
+        try { location = await resolveLocation(String(fd.get("location_input") || ""), zoneId); } catch (error) { setError(error.message); return; }
+        const category = String(fd.get("category") || "Sports"); const locationName = location.name.split(",")[0];
+        const payload = { organiser_id: state.organiser.id, organiser_name: state.organiser.name, organiser_verified: true, title: String(fd.get("title") || "").trim(), category, subcategory: String(fd.get("subcategory") || "").trim(), icon: "pin", description: String(fd.get("description") || "").trim(), zone_id: zoneId, location_name: locationName, address: location.name, lat: location.lat, lng: location.lng, start_time: new Date(String(fd.get("start_time"))).toISOString(), end_time: new Date(String(fd.get("end_time"))).toISOString(), min_capacity: Number(fd.get("min_capacity") || 4), max_capacity: Number(fd.get("max_capacity") || 12), current_registration: 0, status: "scheduled", beginner_friendly: flags.has("beginner_friendly"), skill_level: String(fd.get("skill_level") || "Any"), age_range_min: 18, age_range_max: 99, gender_requirement_optional: String(fd.get("gender_requirement_optional") || "None") === "None" ? null : String(fd.get("gender_requirement_optional")), accessibility_info: String(fd.get("accessibility_info") || "Step-free entry"), equipment_needed: [], people_usually_come_alone: flags.has("people_usually_come_alone"), welcome_host_present: flags.has("welcome_host_present"), verified_organiser_required: true, team_based: flags.has("team_based"), team_size: flags.has("team_based") ? Number(fd.get("team_size") || 3) : null, spectators_allowed: flags.has("spectators_allowed"), bring_friend_allowed: flags.has("bring_friend_allowed"), recommendation_reason: `Recommended because this matches ${category}, ${getZone(zoneId).name}, beginner-friendly format, and open capacity.` };
         const { error } = await state.supabase.from("events").insert(payload);
-        if (error) {
-          setError(error.message);
-          return;
-        }
-        await fetchEvents();
-        state.tab = "my-events";
-        setNotice("Event created.");
+        if (error) { setError(error.message); return; }
+        await fetchEvents(); state.tab = "my-events"; setNotice("Event created.");
       }
-
-      async function saveRegistration() {
-        const event = selectedEvent();
-        if (!event || !state.resident || !state.detailDraft?.participation_state) {
-          setError("Choose one participation status before saving.");
-          return;
-        }
-        const status = state.detailDraft.participation_state;
-        if (status === "Join" && (isFull(event) || !isEligible(event))) {
-          setError("This event is not joinable with your current profile.");
-          return;
-        }
-        const payload = {
-          event_id: event.id,
-          user_id: state.resident.id,
-          participation_state: status,
-          bring_friend: Boolean(state.detailDraft.bring_friend),
-        };
-        const { error } = await state.supabase
-          .from("event_registrations")
-          .upsert(payload, { onConflict: "event_id,user_id" });
-        if (error) {
-          setError(error.message);
-          return;
-        }
-        await fetchRegistrations();
-        await fetchEvents();
-        toast("Your event choice was saved.");
-        render();
+      async function syncEventCount(eventId) {
+        const { count, error } = await state.supabase.from("event_registrations").select("id", { count: "exact", head: true }).eq("event_id", eventId).eq("participation_state", "Join");
+        if (error) return;
+        const event = state.events.find((e) => e.id === eventId); const max = Number(event?.max_capacity || 0); const status = max && Number(count || 0) >= max ? "full" : event?.status === "full" ? "scheduled" : event?.status || "scheduled";
+        await state.supabase.from("events").update({ current_registration: count || 0, status }).eq("id", eventId);
       }
-
+      async function saveRegistration(statusOverride = "") {
+        const event = selectedEvent(); if (!event || !state.resident) return;
+        const status = statusOverride || state.detailDraft?.participation_state; if (!status) { setError("Choose one participation status before saving."); return; }
+        if (status === "Join" && (isFull(event) || !isEligible(event))) { setError("This event is not joinable with your current profile."); return; }
+        state.savingRegistration = true; render();
+        const payload = { event_id: event.id, user_id: state.resident.id, participation_state: status, bring_friend: Boolean(state.detailDraft?.bring_friend) };
+        const { error } = await state.supabase.from("event_registrations").upsert(payload, { onConflict: "event_id,user_id" });
+        if (error) { state.savingRegistration = false; setError(error.message); return; }
+        await syncEventCount(event.id); await fetchRegistrations(); await fetchEvents(); state.savingRegistration = false; toast(status === "Join" ? "You're in. Arrival help is ready." : "Your event choice was saved."); render();
+      }
       async function viewCounts(eventId) {
-        const event = state.events.find((item) => item.id === eventId);
-        if (!event) return;
-        const { data, error } = await state.supabase
-          .from("event_registrations")
-          .select("participation_state, bring_friend")
-          .eq("event_id", eventId);
-        if (error) {
-          setError(error.message);
-          return;
-        }
-        const statuses = {};
-        let bringFriend = 0;
-        (data || []).forEach((row) => {
-          statuses[row.participation_state] =
-            (statuses[row.participation_state] || 0) + 1;
-          if (row.bring_friend) bringFriend += 1;
-        });
-        state.countDialog = {
-          title: event.title,
-          total: data?.length || 0,
-          statuses,
-          bringFriend,
-        };
-        render();
+        const event = state.events.find((item) => item.id === eventId); if (!event) return;
+        const { data, error } = await state.supabase.from("event_registrations").select("participation_state, bring_friend").eq("event_id", eventId);
+        if (error) { setError(error.message); return; }
+        const statuses = {}; let bringFriend = 0; (data || []).forEach((row) => { statuses[row.participation_state] = (statuses[row.participation_state] || 0) + 1; if (row.bring_friend) bringFriend += 1; });
+        state.countDialog = { title: event.title, total: data?.length || 0, statuses, bringFriend }; render();
       }
-
-      function openEvent(eventId) {
-        const reg = registrationFor(eventId);
-        state.selectedEventId = eventId;
-        state.detailDraft = {
-          participation_state: reg?.participation_state || "",
-          bring_friend: Boolean(reg?.bring_friend),
-        };
-        render();
+      async function safeDeleteData() {
+        const privacy = asObject(state.resident?.privacy_settings, defaultPrivacySettings());
+        await state.supabase.from("event_registrations").delete().eq("user_id", state.resident.id);
+        await state.supabase.from("users").update({ selected_interests: [], onboarding_complete: false, privacy_settings: { ...privacy, deactivated: true, hideFromMatching: true, pauseRecs: true } }).eq("id", state.resident.id);
+        state.deleteConfirm = false; await state.supabase.auth.signOut();
       }
+      function openEvent(eventId) { const reg = registrationFor(eventId); state.selectedEventId = eventId; state.detailDraft = { participation_state: reg?.participation_state || "", bring_friend: Boolean(reg?.bring_friend) }; render(); }
 
       document.addEventListener("submit", async (event) => {
-        if (event.target.matches("#auth-form")) {
-          event.preventDefault();
-          await handleAuthSubmit(event.target);
-        }
-        if (event.target.matches("#onboarding-form")) {
-          event.preventDefault();
-          await handleOnboardingSubmit(event.target);
-        }
-        if (event.target.matches("#settings-form")) {
-          event.preventDefault();
-          await handleSettingsSubmit(event.target);
-        }
-        if (event.target.matches("#create-event-form")) {
-          event.preventDefault();
-          await handleCreateEventSubmit(event.target);
-        }
-        if (event.target.matches("#filter-form")) {
-          event.preventDefault();
-          const formData = new FormData(event.target);
-          state.filters.query = String(formData.get("query") || "");
-          state.filters.zone = String(formData.get("zone") || "");
-          state.filters.radius = String(formData.get("radius") || "");
-          render();
-        }
+        if (event.target.matches("#auth-form")) { event.preventDefault(); await handleAuthSubmit(event.target); }
+        if (event.target.matches("#onboarding-form")) { event.preventDefault(); await handleOnboardingSubmit(event.target); }
+        if (event.target.matches("#settings-form")) { event.preventDefault(); await handleSettingsSubmit(event.target); }
+        if (event.target.matches("#create-event-form")) { event.preventDefault(); await handleCreateEventSubmit(event.target); }
+        if (event.target.matches("#filter-form")) { event.preventDefault(); const fd = new FormData(event.target); state.filters.query = String(fd.get("query") || ""); state.filters.zone = String(fd.get("zone") || state.filters.zone); state.filters.radius = String(fd.get("radius") || state.filters.radius); render(); }
       });
-
       document.addEventListener("change", (event) => {
-        if (event.target.matches('input[name="role"]')) {
-          state.authRole = event.target.value;
-        }
-        if (
-          event.target.matches("#map-zone") ||
-          event.target.matches("#map-radius")
-        ) {
-          const form = event.target.closest("form");
-          const formData = new FormData(form);
-          state.filters.query = String(formData.get("query") || "");
-          state.filters.zone = String(formData.get("zone") || "");
-          state.filters.radius = String(formData.get("radius") || "");
-          render();
-        }
-        if (event.target.matches("#zone_id")) {
-          const zone = getZone(event.target.value);
-          const lat = document.querySelector("#lat");
-          const lng = document.querySelector("#lng");
-          if (lat && lng) {
-            lat.value = zone.lat;
-            lng.value = zone.lng;
-          }
-        }
+        if (event.target.matches('input[name="role"]')) state.authRole = event.target.value;
+        if (event.target.matches('[data-autosubmit="true"]')) { const form = event.target.closest("form"); const fd = new FormData(form); state.filters.query = String(fd.get("query") || ""); state.filters.zone = String(fd.get("zone") || ""); state.filters.radius = String(fd.get("radius") || ""); render(); }
       });
-
       document.addEventListener("click", async (event) => {
-        const actionNode = event.target.closest("[data-action]");
-        if (!actionNode) return;
-        const action = actionNode.dataset.action;
-
-        if (
-          action === "close-event" &&
-          actionNode.classList.contains("modal-backdrop") &&
-          event.target.closest("[data-modal-body]")
-        ) {
-          return;
-        }
-        if (
-          action === "close-counts" &&
-          actionNode.classList.contains("modal-backdrop") &&
-          event.target.closest("[data-modal-body]")
-        ) {
-          return;
-        }
-
+        const node = event.target.closest("[data-action]"); if (!node) return;
+        const action = node.dataset.action;
+        if ((action === "close-event" || action === "close-counts" || action === "cancel-delete") && node.classList.contains("modal-backdrop") && event.target.closest("[data-modal-body]")) return;
         event.preventDefault();
-
-        if (action === "auth-mode") {
-          state.authMode = actionNode.dataset.mode;
-          state.error = "";
-          state.notice = "";
-          render();
-        }
-        if (action === "signout") {
-          await state.supabase.auth.signOut();
-        }
-        if (action === "tab") {
-          state.tab = actionNode.dataset.tab;
-          state.error = "";
-          state.notice = "";
-          render();
-        }
-        if (action === "refresh") {
-          await fetchEvents();
-          if (state.resident) await fetchRegistrations();
-          toast("Latest data loaded.");
-          render();
-        }
-        if (action === "open-event") {
-          openEvent(actionNode.dataset.id);
-        }
-        if (action === "close-event") {
-          state.selectedEventId = "";
-          state.detailDraft = null;
-          render();
-        }
-        if (action === "select-state") {
-          if (!state.detailDraft) return;
-          state.detailDraft.participation_state = actionNode.dataset.state;
-          render();
-        }
-        if (action === "toggle-friend") {
-          if (!state.detailDraft) return;
-          state.detailDraft.bring_friend = !state.detailDraft.bring_friend;
-          render();
-        }
-        if (action === "save-registration") {
-          await saveRegistration();
-        }
-        if (action === "view-counts") {
-          await viewCounts(actionNode.dataset.id);
-        }
-        if (action === "close-counts") {
-          state.countDialog = null;
-          render();
-        }
+        if (action === "auth-mode") { state.authMode = node.dataset.mode; state.error = ""; state.notice = ""; render(); }
+        if (action === "signout") await state.supabase.auth.signOut();
+        if (action === "tab") { state.tab = node.dataset.tab; state.error = ""; state.notice = ""; render(); }
+        if (action === "open-event") openEvent(node.dataset.id);
+        if (action === "close-event") { state.selectedEventId = ""; state.detailDraft = null; render(); }
+        if (action === "select-state") { state.detailDraft.participation_state = node.dataset.state; render(); }
+        if (action === "toggle-friend") { if (!state.detailDraft) return; state.detailDraft.bring_friend = !state.detailDraft.bring_friend; render(); }
+        if (action === "save-registration") await saveRegistration();
+        if (action === "quick-join") { openEvent(node.dataset.id); state.detailDraft.participation_state = "Join"; await saveRegistration("Join"); }
+        if (action === "view-counts") await viewCounts(node.dataset.id);
+        if (action === "close-counts") { state.countDialog = null; render(); }
+        if (action === "toggle-interest-edit") { state.settingsEditInterests = !state.settingsEditInterests; render(); }
+        if (action === "delete-data") { state.deleteConfirm = true; render(); }
+        if (action === "cancel-delete") { state.deleteConfirm = false; render(); }
+        if (action === "confirm-delete") await safeDeleteData();
+        if (action === "im-here") toast("Host notified in this prototype.");
       });
 
       init();
